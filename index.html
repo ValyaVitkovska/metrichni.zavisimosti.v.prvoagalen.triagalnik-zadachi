@@ -1,0 +1,1810 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Метрични зависимости в правоъгълен триъгълник</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffead6; /* Светлооранжев фон */
+    --paper: #ffffff;
+    --ink: #14110f;
+    --ink-soft: #3a342c;
+    --accent: #7a1a26;
+    --accent-soft: #c89090;
+    --gold: #b38030; /* Малко по-тъмно златисто за по-добър контраст на жълтия фон */
+    --line: #14110f;
+    --grid: #e2dfcc; /* Топъл сив/жълтеникав цвят за мрежата */
+    --highlight: #ffe0b2; /* По-наситено светлооранжево за акценти */
+    --green: #1f5d44;
+    --red: #a51a1a;
+    --teal: #1f5d6a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    background-image:
+      /* Subtle math-themed pattern: dotted graph paper + radial warmth */
+      radial-gradient(ellipse at 15% 20%, rgba(168, 117, 40, 0.12) 0%, transparent 45%),
+      radial-gradient(ellipse at 85% 80%, rgba(122, 26, 38, 0.10) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, transparent 0%, rgba(20, 17, 15, 0.04) 100%),
+      repeating-linear-gradient(0deg, rgba(20, 17, 15, 0.045) 0px, rgba(20, 17, 15, 0.045) 1px, transparent 1px, transparent 32px),
+      repeating-linear-gradient(90deg, rgba(20, 17, 15, 0.045) 0px, rgba(20, 17, 15, 0.045) 1px, transparent 1px, transparent 32px);
+    background-attachment: fixed;
+    position: relative;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      radial-gradient(circle 1.5px at 16px 16px, rgba(20, 17, 15, 0.18) 1px, transparent 1.5px);
+    background-size: 32px 32px;
+    background-position: 16px 16px;
+    opacity: 0.4;
+  }
+
+  /* Decorative geometric symbols floating in background corners */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'><g fill='none' stroke='%237a1a26' stroke-width='1.2' opacity='0.08'><polygon points='30,180 180,180 180,40'/><line x1='30' y1='180' x2='180' y2='40'/><rect x='168' y='168' width='12' height='12'/></g></svg>"),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'><g fill='none' stroke='%23a87528' stroke-width='1.2' opacity='0.10'><circle cx='100' cy='100' r='70'/><polygon points='40,150 160,150 100,40'/></g></svg>");
+    background-position: -40px calc(100% + 40px), calc(100% + 30px) -30px;
+    background-repeat: no-repeat;
+    background-size: 360px 360px, 320px 320px;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+  }
+
+  .container-inner {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 36px 24px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid var(--ink);
+    position: relative;
+  }
+
+  header::before, header::after {
+    content: "❦";
+    color: var(--gold);
+    font-size: 20px;
+    position: absolute;
+    bottom: 14px;
+  }
+  header::before { left: 50%; transform: translateX(-72px); }
+  header::after { left: 50%; transform: translateX(58px); }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  /* Credits & Image Section */
+  .header-figure {
+    margin: 20px auto 28px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  .header-figure img {
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 3px solid var(--line);
+    box-shadow: 6px 6px 0 var(--ink);
+    margin-bottom: 20px;
+    background: var(--paper);
+  }
+  .header-figcaption {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--ink-soft);
+    font-weight: 500;
+    line-height: 1.5;
+    padding: 6px 16px;
+    background: var(--highlight);
+    border-radius: 30px;
+    border: 1px dashed var(--gold);
+    display: inline-block;
+  }
+  .header-figcaption b {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-size: clamp(32px, 4.5vw, 50px);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+
+  h1 em {
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 21px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+    font-weight: 500;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  @media (max-width: 980px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--paper);
+    border: 2px solid var(--line);
+    padding: 26px;
+    position: relative;
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+
+  .panel-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+  }
+  .panel-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--ink);
+    opacity: 0.25;
+  }
+
+  .diagram-wrap {
+    background: var(--paper);
+    padding: 14px;
+    border: 1px solid var(--grid);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: -1px -1px;
+  }
+
+  svg.triangle-svg {
+    width: 80%;      /* Намален мащаб на чертежа */
+    margin: 0 auto;  /* Центриране */
+    height: auto;
+    display: block;
+  }
+
+  .formulas {
+    margin-top: 16px;
+    padding: 14px 18px;
+    background: #f7dfc8; /* Светлооранжево-бежово, за да отива на фона */
+    border-left: 4px solid var(--accent);
+    border-top: 1px solid var(--grid);
+    border-right: 1px solid var(--grid);
+    border-bottom: 1px solid var(--grid);
+    border-radius: 4px;
+  }
+
+  .formulas h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .formula-list {
+    display: grid;
+    gap: 8px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 17px;       /* Увеличен размер на шрифта */
+    font-weight: 700;      /* Удебелен текст навсякъде */
+    color: var(--ink);
+    line-height: 1.4;
+  }
+
+  .formula-list.cols-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .formula-list span {
+    padding: 2px 0;
+  }
+
+  .formula-list b { color: var(--accent); font-weight: 800; }
+  .formula-list em { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.15em; font-weight: 700; }
+
+  .formula-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-top: 10px;
+    margin-bottom: 6px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--grid);
+    font-weight: 700;
+  }
+  .formula-section-title:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+
+  /* Task panel */
+  .task-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 18px;
+  }
+
+  .chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    padding: 7px 12px;
+    border: 1.5px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s ease;
+    font-weight: 600;
+  }
+  .chip:hover { background: var(--highlight); }
+  .chip.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .task-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+  }
+
+  .difficulty {
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    font-size: 14px;
+  }
+
+  .task-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .task-text {
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--ink);
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+
+  .given {
+    background: var(--highlight);
+    padding: 12px 14px;
+    border-left: 4px solid var(--gold);
+    margin-bottom: 14px;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .given b {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .find {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 19px;
+    color: var(--accent);
+    margin-bottom: 16px;
+    line-height: 1.4;
+    font-weight: 600;
+  }
+  .find::before { content: "❯ "; color: var(--gold); }
+
+  /* Answer input + virtual keyboard */
+  .answer-form {
+    background: var(--paper);
+    border: 2px dashed var(--ink);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .answer-form-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .answer-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .answer-row label {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 21px;
+    min-width: 44px;
+    font-weight: 700;
+  }
+
+  .answer-row .eq { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 700; }
+
+  .ans-input {
+    flex: 1;
+    min-width: 110px;
+    padding: 10px 12px;
+    border: 1.5px solid var(--ink);
+    background: var(--bg);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 600;
+    outline: none;
+  }
+  .ans-input:focus {
+    border-color: var(--accent);
+    background: var(--highlight);
+  }
+  .ans-input.correct {
+    background: #e8f5ec;
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .ans-input.wrong {
+    background: #fde8e8;
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  .ans-status {
+    font-size: 20px;
+    width: 26px;
+    text-align: center;
+    font-weight: 700;
+  }
+  .ans-status.ok { color: var(--green); }
+  .ans-status.no { color: var(--red); }
+
+  /* Virtual keyboard */
+  .vkbd {
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--bg);
+    border: 1.5px solid var(--ink);
+  }
+
+  .vkbd-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .vkbd-keys {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .vkey {
+    min-width: 42px;
+    padding: 8px 12px;
+    border: 1.5px solid var(--ink);
+    background: var(--paper);
+    cursor: pointer;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 19px;
+    font-weight: 700;
+    transition: all 0.1s ease;
+  }
+  .vkey:hover { background: var(--highlight); }
+  .vkey:active { background: var(--ink); color: var(--paper); }
+  .vkey.wide { min-width: 70px; font-size: 14px; font-family: 'JetBrains Mono', monospace; }
+  .vkey.special { color: var(--accent); }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-top: 14px;
+    border-top: 1px dashed var(--grid);
+  }
+
+  button.btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 11px 18px;
+    border: 1.5px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-weight: 600;
+  }
+  button.btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  button.btn.secondary {
+    background: transparent;
+    color: var(--ink);
+  }
+  button.btn.secondary:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  button.btn.primary { background: var(--accent); border-color: var(--accent); }
+  button.btn.primary:hover { background: var(--ink); border-color: var(--ink); }
+
+  .solution {
+    margin-top: 16px;
+    padding: 18px;
+    background: var(--bg);
+    border: 1.5px solid var(--ink);
+    border-style: dashed;
+    display: none;
+  }
+  .solution.show { display: block; }
+
+  .solution-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: var(--accent);
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+
+  .solution-step {
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 8px;
+    padding-left: 20px;
+    position: relative;
+    font-weight: 500;
+  }
+  .solution-step::before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+    font-size: 16px;
+  }
+
+  .answer-final {
+    margin-top: 12px;
+    padding: 12px 14px;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    text-align: center;
+    font-weight: 700;
+  }
+
+  .seed {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    opacity: 0.5;
+  }
+
+  footer {
+    margin-top: 36px;
+    padding-top: 16px;
+    border-top: 1px solid var(--grid);
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  /* Math styling */
+  .m { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.08em; font-weight: 700; }
+  sup { font-size: 0.7em; font-weight: bold; }
+  sub { font-size: 0.7em; font-weight: bold; }
+
+  .frac {
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+    margin: 0 0.15em;
+    font-size: 0.9em;
+    line-height: 1.2;
+  }
+  .frac > span {
+    display: block;
+    padding: 0 0.15em;
+  }
+  .frac > span:first-child {
+    border-bottom: 2px solid currentColor; /* Удебелена дробна черта */
+  }
+
+  /* Textbook Square Root */
+  .sqrt {
+    display: inline-block;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .sqrt-sign {
+    display: inline-block;
+    margin-right: -0.15em;
+    font-family: 'Cormorant Garamond', serif;
+    transform: translateY(0.05em);
+    font-weight: 700;
+  }
+  .sqrt-val {
+    display: inline-block;
+    border-top: 2px solid currentColor; /* Удебелена черта на корена */
+    padding-top: 0.03em;
+    padding-left: 0.05em;
+    padding-right: 0.1em;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="container-inner">
+
+  <header>
+    <div class="eyebrow">— Геометрия 9. клас —</div>
+    
+    <figure class="header-figure">
+      <!-- Изображението, поставено като лого -->
+      <img src="MZPT.png" alt="MZPT">
+      <!-- Кредитите/надписът под него -->
+      <figcaption class="header-figcaption">
+        Идея и педагогически решения: <b>Валя Витковска</b> <span style="opacity:0.5; margin: 0 6px;">|</span> Реализация: <b>Claude, Gemini</b>
+      </figcaption>
+    </figure>
+
+    <h1>Метрични <em>зависимости</em> в правоъгълен триъгълник</h1>
+    <div class="subtitle">Генератор на задачи с чертеж, формули и проверка</div>
+  </header>
+
+  <div class="layout">
+
+    <!-- LEFT: Diagram + formulas -->
+    <section class="panel">
+      <div class="panel-label">Фигура · означения</div>
+      <div class="diagram-wrap">
+        <svg class="triangle-svg" viewBox="0 0 540 380" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="hatch" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="7" stroke="#7a1a26" stroke-width="0.8" opacity="0.35"/>
+            </pattern>
+            <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#14110f"/>
+            </marker>
+            <marker id="arrowGold" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#a87528"/>
+            </marker>
+          </defs>
+
+          <!-- A=(60,290), B=(490,290), C=(360,70), H=(360,290) -->
+          <!-- AH = 300 (b1, longer), HB = 130 (a1, shorter) -->
+
+          <polygon points="60,290 490,290 360,70" fill="url(#hatch)" opacity="0.45"/>
+
+          <!-- Altitude h_c -->
+          <line x1="360" y1="70" x2="360" y2="290" stroke="#7a1a26" stroke-width="3" stroke-dasharray="7,4"/>
+
+          <!-- Triangle sides (THICK) -->
+          <line x1="60" y1="290" x2="490" y2="290" stroke="#14110f" stroke-width="3.5"/>
+          <line x1="60" y1="290" x2="360" y2="70" stroke="#14110f" stroke-width="3.5"/>
+          <line x1="490" y1="290" x2="360" y2="70" stroke="#14110f" stroke-width="3.5"/>
+
+          <!-- Right angle marker at C -->
+          <path d="M 346.5,80.7 L 357.3,95.4 L 372,84.6 L 360,70 Z" fill="none" stroke="#14110f" stroke-width="2"/>
+
+          <!-- Right angle marker at H -->
+          <rect x="360" y="272" width="18" height="18" fill="none" stroke="#7a1a26" stroke-width="2"/>
+
+          <!-- Vertices (bigger) -->
+          <circle cx="60" cy="290" r="5.5" fill="#14110f"/>
+          <circle cx="490" cy="290" r="5.5" fill="#14110f"/>
+          <circle cx="360" cy="70" r="5.5" fill="#14110f"/>
+          <circle cx="360" cy="290" r="4.5" fill="#7a1a26"/>
+
+          <!-- Vertex labels (bigger, bolder) -->
+          <text x="36" y="312" font-family="Cormorant Garamond, serif" font-style="italic" font-size="30" font-weight="700" fill="#14110f">A</text>
+          <text x="498" y="312" font-family="Cormorant Garamond, serif" font-style="italic" font-size="30" font-weight="700" fill="#14110f">B</text>
+          <text x="350" y="58" font-family="Cormorant Garamond, serif" font-style="italic" font-size="30" font-weight="700" fill="#14110f">C</text>
+          <text x="349" y="316" font-family="Cormorant Garamond, serif" font-style="italic" font-size="26" font-weight="700" fill="#7a1a26">H</text>
+
+          <!-- Side labels (bigger) -->
+          <text x="172" y="170" font-family="Cormorant Garamond, serif" font-style="italic" font-size="28" font-weight="700" fill="#14110f">b</text>
+          <text x="436" y="170" font-family="Cormorant Garamond, serif" font-style="italic" font-size="28" font-weight="700" fill="#14110f">a</text>
+
+          <!-- h_c label -->
+          <text x="372" y="190" font-family="Cormorant Garamond, serif" font-style="italic" font-size="24" font-weight="700" fill="#7a1a26">h</text>
+          <text x="389" y="197" font-family="Cormorant Garamond, serif" font-size="16" font-weight="700" fill="#7a1a26">c</text>
+
+          <!-- Hypotenuse label c (above the AB line, inside triangle) -->
+          <text x="240" y="282" font-family="Cormorant Garamond, serif" font-style="italic" font-size="28" font-weight="700" fill="#14110f">c</text>
+
+          <!-- Projection segments below triangle (with arrows) -->
+          <line x1="60" y1="338" x2="360" y2="338" stroke="#a87528" stroke-width="1.8" marker-start="url(#arrowGold)" marker-end="url(#arrowGold)"/>
+          <line x1="360" y1="338" x2="490" y2="338" stroke="#a87528" stroke-width="1.8" marker-start="url(#arrowGold)" marker-end="url(#arrowGold)"/>
+
+          <!-- b1 label below -->
+          <text x="195" y="362" font-family="Cormorant Garamond, serif" font-style="italic" font-size="22" font-weight="700" fill="#a87528">b</text>
+          <text x="211" y="368" font-family="Cormorant Garamond, serif" font-size="14" font-weight="700" fill="#a87528">1</text>
+
+          <!-- a1 label below -->
+          <text x="412" y="362" font-family="Cormorant Garamond, serif" font-style="italic" font-size="22" font-weight="700" fill="#a87528">a</text>
+          <text x="427" y="368" font-family="Cormorant Garamond, serif" font-size="14" font-weight="700" fill="#a87528">1</text>
+
+          <!-- Angles α at A, β at B - ИЗЧИСЛЕНИ ЗА ПЛЪТНО ДОКОСВАНЕ -->
+          <path d="M 98,290 A 38,38 0 0,0 90.6,267.5" fill="none" stroke="#14110f" stroke-width="2"/>
+          <text x="100" y="283" font-family="Cormorant Garamond, serif" font-style="italic" font-size="20" font-weight="700">α</text>
+
+          <path d="M 448,290 A 42,42 0 0,1 468.6,253.8" fill="none" stroke="#14110f" stroke-width="2"/>
+          <text x="432" y="280" font-family="Cormorant Garamond, serif" font-style="italic" font-size="20" font-weight="700">β</text>
+        </svg>
+      </div>
+
+      <div class="formulas">
+        <h3>Метрични зависимости и формули</h3>
+
+        <div class="formula-section-title">▸ Означения</div>
+        <div class="formula-list cols-2">
+          <span><em>a</em>=BC, <em>b</em>=AC, <em>c</em>=AB</span>
+          <span><em>h<sub>c</sub></em>=CH &nbsp;(височина)</span>
+          <span style="grid-column: 1 / -1;"><em>a<sub>1</sub></em>=HB, <em>b<sub>1</sub></em>=AH &nbsp;(проекции на катетите)</span>
+        </div>
+
+        <div class="formula-section-title">▸ Метрични зависимости</div>
+        <div class="formula-list cols-2">
+          <span><b>1.</b> <em>a</em><sup>2</sup> = <em>c</em> · <em>a<sub>1</sub></em></span>
+          <span><b>2.</b> <em>b</em><sup>2</sup> = <em>c</em> · <em>b<sub>1</sub></em></span>
+          <span><b>3.</b> <em>h<sub>c</sub></em><sup>2</sup> = <em>a<sub>1</sub></em> · <em>b<sub>1</sub></em></span>
+          <span><b>4.</b> <em>a</em> · <em>b</em> = <em>c</em> · <em>h<sub>c</sub></em></span>
+          <span><b>5.</b> <em>a</em><sup>2</sup> + <em>b</em><sup>2</sup> = <em>c</em><sup>2</sup></span>
+          <span><b>6.</b> <em>c</em> = <em>a<sub>1</sub></em> + <em>b<sub>1</sub></em></span>
+          <span style="grid-column: 1 / -1; margin-top: 4px;"><b>7.</b> <span class="frac"><span>1</span><span><em>h<sub>c</sub></em><sup>2</sup></span></span> = <span class="frac"><span>1</span><span><em>a</em><sup>2</sup></span></span> + <span class="frac"><span>1</span><span><em>b</em><sup>2</sup></span></span></span>
+        </div>
+
+        <div class="formula-section-title">▸ Лице, периметър, окръжности</div>
+        <div class="formula-list cols-2">
+          <span><b>S</b> = <span class="frac"><span><em>a</em>·<em>b</em></span><span>2</span></span> = <span class="frac"><span><em>c</em>·<em>h<sub>c</sub></em></span><span>2</span></span></span>
+          <span><b>P</b> = <em>a</em> + <em>b</em> + <em>c</em></span>
+          <span><b>R</b> = <span class="frac"><span><em>c</em></span><span>2</span></span></span>
+          <span><b>r</b> = <span class="frac"><span><em>a</em> + <em>b</em> − <em>c</em></span><span>2</span></span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: Task -->
+    <section class="panel">
+      <div class="panel-label">Задача · генератор</div>
+
+      <div class="task-controls" id="typeControls">
+        <button class="chip active" data-type="any">Случаен тип</button>
+        <button class="chip" data-type="pyth">Питагор</button>
+        <button class="chip" data-type="catheti">Катети → c, h, проекции</button>
+        <button class="chip" data-type="proj">Проекции → катети, h</button>
+        <button class="chip" data-type="cathProj">Катет + проекция</button>
+        <button class="chip" data-type="hypProj">Хипотенуза + проекция</button>
+        <button class="chip" data-type="altitude">Височина + проекция</button>
+        <button class="chip" data-type="cathHyp">Катет + хипотенуза</button>
+        <button class="chip" data-type="cathAlt">Катет + h<sub>c</sub></button>
+        <button class="chip" data-type="hypAlt">Хипотенуза + h<sub>c</sub></button>
+        <button class="chip" data-type="area">С лице S</button>
+        <button class="chip" data-type="incircle">Вписана окр. r</button>
+        <button class="chip" data-type="coord">Координатна с-ма</button>
+      </div>
+
+      <div class="task-meta">
+        <span id="taskNum">Задача №1</span>
+        <span class="difficulty" id="diff">★ ☆ ☆</span>
+      </div>
+
+      <div class="task-title" id="taskTitle">Зареждане...</div>
+      <div class="task-text" id="taskText"></div>
+      <div class="given" id="givenBox"></div>
+      <div class="find" id="findBox"></div>
+
+      <!-- ANSWER FORM with virtual keyboard -->
+      <div class="answer-form">
+        <div class="answer-form-label">Въведи отговор/и</div>
+        <div id="answerInputs"></div>
+
+        <div class="vkbd">
+          <div class="vkbd-title">Виртуална клавиатура</div>
+          <div class="vkbd-keys" id="vkbd">
+            <button class="vkey" data-k="0">0</button>
+            <button class="vkey" data-k="1">1</button>
+            <button class="vkey" data-k="2">2</button>
+            <button class="vkey" data-k="3">3</button>
+            <button class="vkey" data-k="4">4</button>
+            <button class="vkey" data-k="5">5</button>
+            <button class="vkey" data-k="6">6</button>
+            <button class="vkey" data-k="7">7</button>
+            <button class="vkey" data-k="8">8</button>
+            <button class="vkey" data-k="9">9</button>
+            <button class="vkey" data-k=",">,</button>
+            <button class="vkey" data-k=".">.</button>
+            <button class="vkey special" data-k="√">√</button>
+            <button class="vkey special" data-k="/">/</button>
+            <button class="vkey" data-k="(">(</button>
+            <button class="vkey" data-k=")">)</button>
+            <button class="vkey" data-k="-">−</button>
+            <button class="vkey" data-k="·">·</button>
+            <button class="vkey wide" data-k="space">␣</button>
+            <button class="vkey wide special" data-k="back">⌫</button>
+            <button class="vkey wide special" data-k="clear">CLR</button>
+          </div>
+        </div>
+
+        <div class="actions" style="margin-top: 12px; padding-top: 0; border: none;">
+          <button class="btn primary" id="checkBtn">Провери</button>
+          <button class="btn secondary" id="solBtn">Покажи решение</button>
+          <button class="btn secondary" id="newBtn">Нова задача</button>
+        </div>
+      </div>
+
+      <div class="solution" id="solBox">
+        <div class="solution-title">Решение</div>
+        <div id="solSteps"></div>
+        <div class="answer-final" id="ansBox"></div>
+      </div>
+
+      <div style="margin-top: 10px;" class="seed" id="seedTxt"></div>
+    </section>
+
+  </div>
+
+  <footer>
+    Δ &nbsp;·&nbsp; правоъгълен триъгълник ABC, ∠C = 90° &nbsp;·&nbsp; CH ⊥ AB
+  </footer>
+</div>
+</div>
+
+<script>
+// ============================================================
+//  RATIONAL + SQRT NUMBER REPRESENTATION
+//  Value form: { p, q, n }  meaning  (p/q) * sqrt(n)
+//  with q>0, n>=1, gcd(p,q)=1, n square-free
+// ============================================================
+
+function gcd(a, b) { a=Math.abs(a); b=Math.abs(b); while(b){[a,b]=[b,a%b];} return a||1; }
+
+function makeNum(p, q, n) {
+  // Reduce
+  q = q || 1;
+  n = n || 1;
+  // Extract square factors out of n
+  let mult = 1;
+  for (let i = 2; i*i <= n; i++) {
+    while (n % (i*i) === 0) { n = n / (i*i); mult *= i; }
+  }
+  p = p * mult;
+  // Sign: keep q positive
+  if (q < 0) { q = -q; p = -p; }
+  // Reduce p/q
+  if (p === 0) return { p: 0, q: 1, n: 1 };
+  const g = gcd(p, q);
+  p = p / g;
+  q = q / g;
+  return { p, q, n };
+}
+
+function num(value) {
+  // From integer
+  if (typeof value === 'number') return makeNum(value, 1, 1);
+  return makeNum(value.p, value.q, value.n);
+}
+
+// Build sqrt-number from integer under sqrt
+function fromSqrt(k) {
+  if (k < 0) return null;
+  return makeNum(1, 1, k);
+}
+
+// SVG textbook sqrt helper
+function sqr(inner) {
+  return `<span class="sqrt"><span class="sqrt-sign">√</span><span class="sqrt-val">${inner}</span></span>`;
+}
+
+// Float value
+function toFloat(x) { return (x.p / x.q) * Math.sqrt(x.n); }
+
+// HTML render of number
+function renderNum(x) {
+  const { p, q, n } = x;
+  if (p === 0) return '0';
+  // Build numerator string
+  let numStr;
+  if (n === 1) {
+    // Pure rational
+    numStr = String(Math.abs(p));
+  } else {
+    // Has sqrt
+    const absP = Math.abs(p);
+    if (absP === 1) numStr = sqr(n);
+    else numStr = `${absP}${sqr(n)}`;
+  }
+  let sign = p < 0 ? '−' : '';
+  if (q === 1) return sign + numStr;
+  return `${sign}<span class="frac"><span>${numStr}</span><span>${q}</span></span>`;
+}
+
+// Plain text render (for input matching)
+function renderNumPlain(x) {
+  const { p, q, n } = x;
+  if (p === 0) return '0';
+  const absP = Math.abs(p);
+  let numStr;
+  if (n === 1) numStr = String(absP);
+  else if (absP === 1) numStr = `√${n}`;
+  else numStr = `${absP}√${n}`;
+  let sign = p < 0 ? '-' : '';
+  if (q === 1) return sign + numStr;
+  return `${sign}${numStr}/${q}`;
+}
+
+// Operations
+function nMul(a, b) {
+  // (p1/q1)*sqrt(n1) * (p2/q2)*sqrt(n2) = (p1*p2)/(q1*q2) * sqrt(n1*n2)
+  return makeNum(a.p * b.p, a.q * b.q, a.n * b.n);
+}
+
+function nDiv(a, b) {
+  // a / b = (p1*q2)/(q1*p2) * sqrt(n1)/sqrt(n2)
+  // sqrt(n1)/sqrt(n2) = sqrt(n1*n2)/n2
+  return makeNum(a.p * b.q * b.n, a.q * b.p * b.n, a.n * b.n);
+}
+
+function nAdd(a, b) {
+  // Only if same n
+  if (a.n === b.n) {
+    // p1/q1 + p2/q2 = (p1*q2 + p2*q1)/(q1*q2)  * sqrt(n)
+    return makeNum(a.p * b.q + b.p * a.q, a.q * b.q, a.n);
+  }
+  // Mixed - return as float-based num if necessary
+  // For our generator we'll always design tasks so additions stay homogeneous
+  // Fallback: produce a num whose float matches via approximation (not used)
+  const f = toFloat(a) + toFloat(b);
+  return makeNum(Math.round(f * 1000), 1000, 1);
+}
+
+function nSub(a, b) {
+  return nAdd(a, makeNum(-b.p, b.q, b.n));
+}
+
+function nSq(a) {
+  // a^2 = (p^2/q^2) * n
+  return makeNum(a.p * a.p * a.n, a.q * a.q, 1);
+}
+
+function nSqrt(a) {
+  // sqrt(a) where a is a positive rational under sqrt
+  // a = (p/q)*sqrt(n). For our task design we'll only call sqrt on values where a.n=1
+  // sqrt(p/q) = sqrt(p*q)/q
+  if (a.n !== 1) {
+    // sqrt((p/q)*sqrt(n)) — not used in our flows
+    const f = Math.sqrt(toFloat(a));
+    return makeNum(Math.round(f*1000), 1000, 1);
+  }
+  // n=1, value = p/q
+  if (a.p < 0) return null;
+  // sqrt(p/q) = sqrt(p*q)/q
+  return makeNum(1, a.q, a.p * a.q);
+}
+
+// Equality up to rendering
+function nEq(a, b) {
+  const A = makeNum(a.p, a.q, a.n);
+  const B = makeNum(b.p, b.q, b.n);
+  return A.p === B.p && A.q === B.q && A.n === B.n;
+}
+
+// Parse user input
+// Accepted forms:
+//   integer:  "12", "-3"
+//   decimal:  "2.5", "2,5"
+//   fraction: "3/4", "-3/4"
+//   sqrt:     "√3", "sqrt(3)"
+//   coeff*sqrt: "2√3", "2*√3"
+//   coeff*sqrt/q: "2√3/5", "(2√3)/5"
+//   sign:     "-2√3"
+function parseAnswer(s) {
+  if (!s) return null;
+  let t = s.trim().toLowerCase();
+  t = t.replace(/sqrt/g, '√');
+  t = t.replace(/\s+/g, '');
+  t = t.replace(/,/g, '.');
+  t = t.replace(/[*·×]/g, '');
+  t = t.replace(/[()]/g, '');
+  t = t.replace(/−/g, '-');
+
+  if (t === '' || t === '0') return makeNum(0, 1, 1);
+
+  // Sign
+  let sign = 1;
+  if (t.startsWith('-')) { sign = -1; t = t.slice(1); }
+  else if (t.startsWith('+')) { t = t.slice(1); }
+
+  // Pattern: [coeff][√n][/q]
+  // Split fraction
+  let denom = 1;
+  if (t.includes('/')) {
+    const parts = t.split('/');
+    if (parts.length !== 2) return null;
+    t = parts[0];
+    const d = parseFloat(parts[1]);
+    if (isNaN(d) || d === 0) return null;
+    denom = d;
+  }
+
+  // Now t should be either "X" or "X√Y" or "√Y"
+  let coeff = 1, root = 1;
+  if (t.includes('√')) {
+    const idx = t.indexOf('√');
+    const left = t.slice(0, idx);
+    const right = t.slice(idx + 1);
+    if (left === '') coeff = 1;
+    else {
+      coeff = parseFloat(left);
+      if (isNaN(coeff)) return null;
+    }
+    if (right === '') return null;
+    root = parseFloat(right);
+    if (isNaN(root) || root <= 0) return null;
+  } else {
+    coeff = parseFloat(t);
+    if (isNaN(coeff)) return null;
+  }
+
+  // Convert coeff/denom to integer p,q if possible
+  // Multiply by 1000 if decimal
+  function toRational(x) {
+    if (Math.abs(x - Math.round(x)) < 1e-9) return [Math.round(x), 1];
+    // Try with 10, 100, 1000
+    for (const m of [10, 100, 1000, 10000]) {
+      const v = x * m;
+      if (Math.abs(v - Math.round(v)) < 1e-6) {
+        const r = Math.round(v);
+        const g = gcd(Math.abs(r), m);
+        return [r/g, m/g];
+      }
+    }
+    return null;
+  }
+
+  const cr = toRational(coeff);
+  const dr = toRational(denom);
+  if (!cr || !dr || !Number.isInteger(root)) return null;
+  const p = sign * cr[0] * dr[1];
+  const q = cr[1] * dr[0];
+  return makeNum(p, q, root);
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+
+const TYPES = ['pyth','catheti','proj','cathProj','hypProj','altitude','cathHyp','cathAlt','hypAlt','area','incircle','coord'];
+let currentType = 'any';
+let counter = 0;
+let currentTask = null;
+
+const $ = id => document.getElementById(id);
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function rnd(lo, hi) { return Math.floor(Math.random() * (hi - lo + 1)) + lo; }
+function frac(n, d) { return `<span class="frac"><span>${n}</span><span>${d}</span></span>`; }
+
+// Pythagorean triples (primitive + scaled)
+const PYTH_TRIPLES = [
+  [3,4,5], [5,12,13], [8,15,17], [7,24,25], [20,21,29],
+  [6,8,10], [9,12,15], [12,16,20], [15,20,25], [10,24,26],
+  [18,24,30], [16,30,34], [9,40,41]
+];
+
+// ============================================================
+// TASK BUILDERS
+// Each returns: { title, text, given, find, answers: [{label, expected}], steps, finalAnswer, diff }
+// ============================================================
+
+// ---------- Type: PYTHAGORAS ----------
+function makePyth() {
+  const variant = pick(['ab→c', 'ac→b', 'bc→a']);
+  if (variant === 'ab→c') {
+    const [a, b, c] = pick(PYTH_TRIPLES);
+    return {
+      title: 'Питагорова теорема',
+      text: `В правоъгълен триъгълник <span class="m">ABC</span> с прав ъгъл при <span class="m">C</span> са дадени катетите <span class="m">a</span> = ${a} и <span class="m">b</span> = ${b}.`,
+      given: `<b>Дадено:</b> ∠C = 90°, &nbsp; a = ${a}, &nbsp; b = ${b}`,
+      find: 'Намерете хипотенузата <span class="m">c</span>.',
+      answers: [{label: 'c', expected: num(c)}],
+      steps: [
+        `По теорема на Питагор: c<sup>2</sup> = a<sup>2</sup> + b<sup>2</sup> = ${a}<sup>2</sup> + ${b}<sup>2</sup> = ${a*a} + ${b*b} = ${a*a+b*b}.`,
+        `Следователно c = ${sqr(a*a+b*b)} = ${c}.`
+      ],
+      finalAnswer: `c = ${c}`,
+      diff: '★ ☆ ☆'
+    };
+  }
+  if (variant === 'ac→b' || variant === 'bc→a') {
+    const [a, b, c] = pick(PYTH_TRIPLES);
+    if (variant === 'ac→b') {
+      return {
+        title: 'Питагорова теорема',
+        text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катет <span class="m">a</span> = ${a} и хипотенуза <span class="m">c</span> = ${c}.`,
+        given: `<b>Дадено:</b> ∠C = 90°, &nbsp; a = ${a}, &nbsp; c = ${c}`,
+        find: 'Намерете другия катет <span class="m">b</span>.',
+        answers: [{label: 'b', expected: num(b)}],
+        steps: [
+          `От a<sup>2</sup> + b<sup>2</sup> = c<sup>2</sup>: b<sup>2</sup> = c<sup>2</sup> − a<sup>2</sup> = ${c*c} − ${a*a} = ${b*b}.`,
+          `b = ${sqr(b*b)} = ${b}.`
+        ],
+        finalAnswer: `b = ${b}`,
+        diff: '★ ☆ ☆'
+      };
+    }
+    return {
+      title: 'Питагорова теорема',
+      text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катет <span class="m">b</span> = ${b} и хипотенуза <span class="m">c</span> = ${c}.`,
+      given: `<b>Дадено:</b> ∠C = 90°, &nbsp; b = ${b}, &nbsp; c = ${c}`,
+      find: 'Намерете другия катет <span class="m">a</span>.',
+      answers: [{label: 'a', expected: num(a)}],
+      steps: [
+        `От a<sup>2</sup> + b<sup>2</sup> = c<sup>2</sup>: a<sup>2</sup> = c<sup>2</sup> − b<sup>2</sup> = ${c*c} − ${b*b} = ${a*a}.`,
+        `a = ${sqr(a*a)} = ${a}.`
+      ],
+      finalAnswer: `a = ${a}`,
+      diff: '★ ☆ ☆'
+    };
+  }
+}
+
+// ---------- Type: CATHETI → c, h, projections ----------
+function makeCatheti() {
+  const [a, b, c] = pick(PYTH_TRIPLES);
+  const h = num((a*b)/c); // not always integer; rebuild via num
+  // h = a*b/c -- as rational
+  const hN = makeNum(a*b, c, 1);
+  const a1N = makeNum(a*a, c, 1);
+  const b1N = makeNum(b*b, c, 1);
+
+  return {
+    title: 'Дадени катети',
+    text: `В правоъгълен триъгълник <span class="m">ABC</span> с прав ъгъл при <span class="m">C</span> са дадени катетите <span class="m">a</span> = ${a} и <span class="m">b</span> = ${b}.`,
+    given: `<b>Дадено:</b> ∠C = 90°, &nbsp; a = ${a}, &nbsp; b = ${b}, &nbsp; CH ⊥ AB`,
+    find: 'Намерете хипотенузата <span class="m">c</span>, височината <span class="m">h<sub>c</sub></span> и проекциите <span class="m">a<sub>1</sub></span>, <span class="m">b<sub>1</sub></span>.',
+    answers: [
+      {label: 'c', expected: num(c)},
+      {label: 'h<sub>c</sub>', expected: hN},
+      {label: 'a<sub>1</sub>', expected: a1N},
+      {label: 'b<sub>1</sub>', expected: b1N}
+    ],
+    steps: [
+      `По Питагор: c = ${sqr('a<sup>2</sup>+b<sup>2</sup>')} = ${sqr(`${a*a}+${b*b}`)} = ${sqr(a*a+b*b)} = ${c}.`,
+      `От a·b = c·h<sub>c</sub>: h<sub>c</sub> = ${frac('a·b', 'c')} = ${frac(`${a}·${b}`, c)} = ${renderNum(hN)}.`,
+      `От a<sup>2</sup> = c·a<sub>1</sub>: a<sub>1</sub> = ${frac('a<sup>2</sup>', 'c')} = ${frac(a*a, c)} = ${renderNum(a1N)}.`,
+      `От b<sup>2</sup> = c·b<sub>1</sub>: b<sub>1</sub> = ${frac('b<sup>2</sup>', 'c')} = ${frac(b*b, c)} = ${renderNum(b1N)}.`
+    ],
+    finalAnswer: `c = ${c}, &nbsp; h<sub>c</sub> = ${renderNum(hN)}, &nbsp; a<sub>1</sub> = ${renderNum(a1N)}, &nbsp; b<sub>1</sub> = ${renderNum(b1N)}`,
+    diff: '★ ★ ☆'
+  };
+}
+
+// ---------- Type: PROJECTIONS → a, b, h, c ----------
+function makeProj() {
+  // Use integer projections (a1, b1) so that c = a1+b1
+  const setups = [
+    {a1: 9, b1: 16},   // c=25, h=12, a=15, b=20
+    {a1: 16, b1: 9},
+    {a1: 4, b1: 9},    // c=13, h=6
+    {a1: 1, b1: 4},    // c=5, h=2
+    {a1: 2, b1: 8},    // c=10, h=4
+    {a1: 18, b1: 32},  // c=50, h=24, a=30, b=40
+    {a1: 3, b1: 12},
+    {a1: 5, b1: 20}
+  ];
+  const {a1, b1} = pick(setups);
+  const c = a1 + b1;
+  const hN = nSqrt(num(a1 * b1));
+  const aN = nSqrt(num(c * a1));
+  const bN = nSqrt(num(c * b1));
+
+  return {
+    title: 'Дадени проекции',
+    text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) височината <span class="m">CH</span> към хипотенузата отделя проекции <span class="m">a<sub>1</sub></span> = ${a1} и <span class="m">b<sub>1</sub></span> = ${b1}.`,
+    given: `<b>Дадено:</b> ∠C = 90°, &nbsp; a<sub>1</sub> = ${a1}, &nbsp; b<sub>1</sub> = ${b1}`,
+    find: 'Намерете хипотенузата <span class="m">c</span>, височината <span class="m">h<sub>c</sub></span> и катетите <span class="m">a</span>, <span class="m">b</span>.',
+    answers: [
+      {label: 'c', expected: num(c)},
+      {label: 'h<sub>c</sub>', expected: hN},
+      {label: 'a', expected: aN},
+      {label: 'b', expected: bN}
+    ],
+    steps: [
+      `c = a<sub>1</sub> + b<sub>1</sub> = ${a1} + ${b1} = ${c}.`,
+      `h<sub>c</sub><sup>2</sup> = a<sub>1</sub>·b<sub>1</sub> = ${a1*b1}, h<sub>c</sub> = ${sqr(a1*b1)} = ${renderNum(hN)}.`,
+      `a<sup>2</sup> = c·a<sub>1</sub> = ${c*a1}, a = ${sqr(c*a1)} = ${renderNum(aN)}.`,
+      `b<sup>2</sup> = c·b<sub>1</sub> = ${c*b1}, b = ${sqr(c*b1)} = ${renderNum(bN)}.`
+    ],
+    finalAnswer: `c = ${c}, &nbsp; h<sub>c</sub> = ${renderNum(hN)}, &nbsp; a = ${renderNum(aN)}, &nbsp; b = ${renderNum(bN)}`,
+    diff: '★ ★ ☆'
+  };
+}
+
+// ---------- Type: CATHETUS + ITS PROJECTION ----------
+function makeCathProj() {
+  const setups = [
+    {a: 15, a1: 9},  // c=25, b1=16, b=20, h=12
+    {a: 20, a1: 16}, // c=25
+    {a: 12, a1: 9},  // c=16
+    {a: 6, a1: 4},   // c=9
+    {a: 10, a1: 8},  // c=12.5
+    {a: 8, a1: 4},   // c=16
+    {a: 30, a1: 18}  // c=50
+  ];
+  const {a, a1} = pick(setups);
+  const cN = makeNum(a*a, a1, 1);
+  const c = a*a/a1;
+  const b1N = makeNum(a*a - a1*a1, a1, 1);
+  const hN = nSqrt(nMul(num(a1), b1N));
+  const bN = nSqrt(nMul(cN, b1N));
+
+  return {
+    title: 'Катет и неговата проекция',
+    text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катет <span class="m">a</span> = ${a} и неговата проекция върху хипотенузата <span class="m">a<sub>1</sub></span> = ${a1}.`,
+    given: `<b>Дадено:</b> ∠C = 90°, &nbsp; a = ${a}, &nbsp; a<sub>1</sub> = ${a1}`,
+    find: 'Намерете <span class="m">c</span>, <span class="m">b<sub>1</sub></span>, <span class="m">b</span> и <span class="m">h<sub>c</sub></span>.',
+    answers: [
+      {label: 'c', expected: cN},
+      {label: 'b<sub>1</sub>', expected: b1N},
+      {label: 'b', expected: bN},
+      {label: 'h<sub>c</sub>', expected: hN}
+    ],
+    steps: [
+      `От a<sup>2</sup> = c·a<sub>1</sub>: c = ${frac('a<sup>2</sup>', 'a<sub>1</sub>')} = ${frac(a*a, a1)} = ${renderNum(cN)}.`,
+      `b<sub>1</sub> = c − a<sub>1</sub> = ${renderNum(cN)} − ${a1} = ${renderNum(b1N)}.`,
+      `b<sup>2</sup> = c·b<sub>1</sub>, b = ${sqr('c·b<sub>1</sub>')} = ${renderNum(bN)}.`,
+      `h<sub>c</sub><sup>2</sup> = a<sub>1</sub>·b<sub>1</sub>, h<sub>c</sub> = ${renderNum(hN)}.`
+    ],
+    finalAnswer: `c = ${renderNum(cN)}, &nbsp; b<sub>1</sub> = ${renderNum(b1N)}, &nbsp; b = ${renderNum(bN)}, &nbsp; h<sub>c</sub> = ${renderNum(hN)}`,
+    diff: '★ ★ ☆'
+  };
+}
+
+// ---------- Type: HYPOTENUSE + PROJECTION ----------
+function makeHypProj() {
+  const setups = [
+    {c: 25, a1: 9},
+    {c: 25, a1: 16},
+    {c: 13, a1: 4},
+    {c: 13, a1: 9},
+    {c: 10, a1: 2},
+    {c: 50, a1: 18},
+    {c: 17, a1: 8}
+  ];
+  const {c, a1} = pick(setups);
+  const b1 = c - a1;
+  const aN = nSqrt(num(c*a1));
+  const bN = nSqrt(num(c*b1));
+  const hN = nSqrt(num(a1*b1));
+
+  return {
+    title: 'Хипотенуза и проекция',
+    text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) хипотенузата е <span class="m">c</span> = ${c}, а проекцията на катета <span class="m">a</span> е <span class="m">a<sub>1</sub></span> = ${a1}.`,
+    given: `<b>Дадено:</b> ∠C = 90°, &nbsp; c = ${c}, &nbsp; a<sub>1</sub> = ${a1}`,
+    find: 'Намерете катетите <span class="m">a</span>, <span class="m">b</span>, проекцията <span class="m">b<sub>1</sub></span> и височината <span class="m">h<sub>c</sub></span>.',
+    answers: [
+      {label: 'b<sub>1</sub>', expected: num(b1)},
+      {label: 'a', expected: aN},
+      {label: 'b', expected: bN},
+      {label: 'h<sub>c</sub>', expected: hN}
+    ],
+    steps: [
+      `b<sub>1</sub> = c − a<sub>1</sub> = ${c} − ${a1} = ${b1}.`,
+      `a<sup>2</sup> = c·a<sub>1</sub> = ${c*a1}, a = ${renderNum(aN)}.`,
+      `b<sup>2</sup> = c·b<sub>1</sub> = ${c*b1}, b = ${renderNum(bN)}.`,
+      `h<sub>c</sub><sup>2</sup> = a<sub>1</sub>·b<sub>1</sub> = ${a1*b1}, h<sub>c</sub> = ${renderNum(hN)}.`
+    ],
+    finalAnswer: `b<sub>1</sub> = ${b1}, &nbsp; a = ${renderNum(aN)}, &nbsp; b = ${renderNum(bN)}, &nbsp; h<sub>c</sub> = ${renderNum(hN)}`,
+    diff: '★ ★ ☆'
+  };
+}
+
+// ---------- Type: ALTITUDE + PROJECTION ----------
+function makeAltitude() {
+  const setups = [
+    {h: 6, a1: 4},    // b1=9
+    {h: 12, a1: 9},
+    {h: 12, a1: 16},
+    {h: 4, a1: 2},
+    {h: 8, a1: 4},
+    {h: 6, a1: 3},
+    {h: 24, a1: 18}
+  ];
+  const {h, a1} = pick(setups);
+  const b1N = makeNum(h*h, a1, 1);
+  const cN = nAdd(num(a1), b1N);
+  const aN = nSqrt(nMul(cN, num(a1)));
+  const bN = nSqrt(nMul(cN, b1N));
+
+  return {
+    title: 'Височина и проекция',
+    text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) височината към хипотенузата е <span class="m">h<sub>c</sub></span> = ${h}, а едната проекция е <span class="m">a<sub>1</sub></span> = ${a1}.`,
+    given: `<b>Дадено:</b> ∠C = 90°, &nbsp; h<sub>c</sub> = ${h}, &nbsp; a<sub>1</sub> = ${a1}`,
+    find: 'Намерете <span class="m">b<sub>1</sub></span>, хипотенузата <span class="m">c</span> и катетите <span class="m">a</span>, <span class="m">b</span>.',
+    answers: [
+      {label: 'b<sub>1</sub>', expected: b1N},
+      {label: 'c', expected: cN},
+      {label: 'a', expected: aN},
+      {label: 'b', expected: bN}
+    ],
+    steps: [
+      `От h<sub>c</sub><sup>2</sup> = a<sub>1</sub>·b<sub>1</sub>: b<sub>1</sub> = ${frac('h<sub>c</sub><sup>2</sup>', 'a<sub>1</sub>')} = ${frac(h*h, a1)} = ${renderNum(b1N)}.`,
+      `c = a<sub>1</sub> + b<sub>1</sub> = ${a1} + ${renderNum(b1N)} = ${renderNum(cN)}.`,
+      `a<sup>2</sup> = c·a<sub>1</sub>, a = ${renderNum(aN)}.`,
+      `b<sup>2</sup> = c·b<sub>1</sub>, b = ${renderNum(bN)}.`
+    ],
+    finalAnswer: `b<sub>1</sub> = ${renderNum(b1N)}, &nbsp; c = ${renderNum(cN)}, &nbsp; a = ${renderNum(aN)}, &nbsp; b = ${renderNum(bN)}`,
+    diff: '★ ★ ★'
+  };
+}
+
+// ---------- Type: CATHETUS + HYPOTENUSE ----------
+function makeCathHyp() {
+  const [a, b, c] = pick(PYTH_TRIPLES);
+  const which = pick(['a', 'b']);
+  if (which === 'a') {
+    const a1N = makeNum(a*a, c, 1);
+    const b1N = nSub(num(c), a1N);
+    const hN = nSqrt(nMul(a1N, b1N));
+    return {
+      title: 'Катет и хипотенуза',
+      text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катет <span class="m">a</span> = ${a} и хипотенуза <span class="m">c</span> = ${c}.`,
+      given: `<b>Дадено:</b> ∠C = 90°, &nbsp; a = ${a}, &nbsp; c = ${c}`,
+      find: 'Намерете катета <span class="m">b</span> и височината <span class="m">h<sub>c</sub></span>.',
+      answers: [
+        {label: 'b', expected: num(b)},
+        {label: 'h<sub>c</sub>', expected: makeNum(a*b, c, 1)}
+      ],
+      steps: [
+        `По Питагор: b<sup>2</sup> = c<sup>2</sup> − a<sup>2</sup> = ${c*c} − ${a*a} = ${b*b}, b = ${b}.`,
+        `От a·b = c·h<sub>c</sub>: h<sub>c</sub> = ${frac('a·b', 'c')} = ${frac(`${a}·${b}`, c)} = ${renderNum(makeNum(a*b, c, 1))}.`
+      ],
+      finalAnswer: `b = ${b}, &nbsp; h<sub>c</sub> = ${renderNum(makeNum(a*b, c, 1))}`,
+      diff: '★ ★ ☆'
+    };
+  } else {
+    return {
+      title: 'Катет и хипотенуза',
+      text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катет <span class="m">b</span> = ${b} и хипотенуза <span class="m">c</span> = ${c}.`,
+      given: `<b>Дадено:</b> ∠C = 90°, &nbsp; b = ${b}, &nbsp; c = ${c}`,
+      find: 'Намерете катета <span class="m">a</span> и височината <span class="m">h<sub>c</sub></span>.',
+      answers: [
+        {label: 'a', expected: num(a)},
+        {label: 'h<sub>c</sub>', expected: makeNum(a*b, c, 1)}
+      ],
+      steps: [
+        `По Питагор: a<sup>2</sup> = c<sup>2</sup> − b<sup>2</sup> = ${c*c} − ${b*b} = ${a*a}, a = ${a}.`,
+        `От a·b = c·h<sub>c</sub>: h<sub>c</sub> = ${frac('a·b', 'c')} = ${frac(`${a}·${b}`, c)} = ${renderNum(makeNum(a*b, c, 1))}.`
+      ],
+      finalAnswer: `a = ${a}, &nbsp; h<sub>c</sub> = ${renderNum(makeNum(a*b, c, 1))}`,
+      diff: '★ ★ ☆'
+    };
+  }
+}
+
+// ---------- Type: CATHETUS + ALTITUDE ----------
+function makeCathAlt() {
+  // Choose pythagorean triple, give a and h_c, find c, b, projections
+  const [a, b, c] = pick(PYTH_TRIPLES);
+  const hN = makeNum(a*b, c, 1);
+  // Display as h_c value; use either integer-h cases when possible
+  // We give: a and h_c, find c (= a*b/h, but tricky).
+  // Use formula: 1/h^2 = 1/a^2 + 1/b^2 → b^2 = (a^2 h^2)/(a^2 - h^2)
+  // Pick scenarios where h is small integer
+  const goodCases = [
+    {a:15, b:20, c:25}, {a:20, b:15, c:25},
+    {a:10, b:24, c:26}, {a:24, b:10, c:26},
+    {a:9, b:12, c:15}, {a:12, b:9, c:15},
+    {a:8, b:6, c:10}, {a:6, b:8, c:10}
+  ];
+  const t = pick(goodCases);
+  const hc = makeNum(t.a*t.b, t.c, 1);
+  const a1N = makeNum(t.a*t.a, t.c, 1);
+  const b1N = makeNum(t.b*t.b, t.c, 1);
+
+  return {
+    title: 'Катет и височина',
+    text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катет <span class="m">a</span> = ${t.a} и височината <span class="m">h<sub>c</sub></span> = ${renderNum(hc)}.`,
+    given: `<b>Дадено:</b> ∠C = 90°, &nbsp; a = ${t.a}, &nbsp; h<sub>c</sub> = ${renderNum(hc)}`,
+    find: 'Намерете <span class="m">b</span>, <span class="m">c</span>, <span class="m">a<sub>1</sub></span> и <span class="m">b<sub>1</sub></span>.',
+    answers: [
+      {label: 'b', expected: num(t.b)},
+      {label: 'c', expected: num(t.c)},
+      {label: 'a<sub>1</sub>', expected: a1N},
+      {label: 'b<sub>1</sub>', expected: b1N}
+    ],
+    steps: [
+      `От ${frac(1, 'h<sub>c</sub><sup>2</sup>')} = ${frac(1, 'a<sup>2</sup>')} + ${frac(1, 'b<sup>2</sup>')}: ${frac(1, 'b<sup>2</sup>')} = ${frac(1, 'h<sub>c</sub><sup>2</sup>')} − ${frac(1, 'a<sup>2</sup>')}.`,
+      `b<sup>2</sup> = ${frac('a<sup>2</sup>·h<sub>c</sub><sup>2</sup>', 'a<sup>2</sup> − h<sub>c</sub><sup>2</sup>')} ⇒ b = ${t.b}.`,
+      `По Питагор: c = ${sqr('a<sup>2</sup>+b<sup>2</sup>')} = ${sqr(`${t.a*t.a}+${t.b*t.b}`)} = ${t.c}.`,
+      `a<sub>1</sub> = ${frac('a<sup>2</sup>', 'c')} = ${renderNum(a1N)}, &nbsp; b<sub>1</sub> = ${frac('b<sup>2</sup>', 'c')} = ${renderNum(b1N)}.`
+    ],
+    finalAnswer: `b = ${t.b}, &nbsp; c = ${t.c}, &nbsp; a<sub>1</sub> = ${renderNum(a1N)}, &nbsp; b<sub>1</sub> = ${renderNum(b1N)}`,
+    diff: '★ ★ ★'
+  };
+}
+
+// ---------- Type: HYPOTENUSE + ALTITUDE ----------
+function makeHypAlt() {
+  const cases = [
+    {c:8, h:makeNum(2,1,3), info:'(8, 2√3)'}, // a1*b1 = 12, a1+b1=8 → a1=2, b1=6
+    {c:13, a1:4, b1:9, h:6},
+    {c:25, a1:9, b1:16, h:12},
+    {c:10, a1:2, b1:8, h:4},
+    {c:5, a1:1, b1:4, h:2}
+  ];
+  const useCase = pick(cases.slice(1)); // skip the irrational h case for first iter
+  const {c, a1, b1, h} = useCase;
+  const aN = nSqrt(num(c*a1));
+  const bN = nSqrt(num(c*b1));
+
+  return {
+    title: 'Хипотенуза и височина',
+    text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) хипотенузата е <span class="m">c</span> = ${c}, а височината към нея е <span class="m">h<sub>c</sub></span> = ${h}.`,
+    given: `<b>Дадено:</b> ∠C = 90°, &nbsp; c = ${c}, &nbsp; h<sub>c</sub> = ${h}`,
+    find: 'Намерете катетите <span class="m">a</span>, <span class="m">b</span> и проекциите <span class="m">a<sub>1</sub></span>, <span class="m">b<sub>1</sub></span>.',
+    answers: [
+      {label: 'a<sub>1</sub>', expected: num(a1)},
+      {label: 'b<sub>1</sub>', expected: num(b1)},
+      {label: 'a', expected: aN},
+      {label: 'b', expected: bN}
+    ],
+    steps: [
+      `От h<sub>c</sub><sup>2</sup> = a<sub>1</sub>·b<sub>1</sub> и c = a<sub>1</sub>+b<sub>1</sub>: a<sub>1</sub>·b<sub>1</sub> = ${h*h}, a<sub>1</sub>+b<sub>1</sub> = ${c}.`,
+      `a<sub>1</sub>, b<sub>1</sub> са корени на x<sup>2</sup> − ${c}x + ${h*h} = 0 ⇒ a<sub>1</sub> = ${a1}, b<sub>1</sub> = ${b1}.`,
+      `a<sup>2</sup> = c·a<sub>1</sub> = ${c*a1}, a = ${renderNum(aN)}.`,
+      `b<sup>2</sup> = c·b<sub>1</sub> = ${c*b1}, b = ${renderNum(bN)}.`
+    ],
+    finalAnswer: `a<sub>1</sub> = ${a1}, &nbsp; b<sub>1</sub> = ${b1}, &nbsp; a = ${renderNum(aN)}, &nbsp; b = ${renderNum(bN)}`,
+    diff: '★ ★ ★'
+  };
+}
+
+// ---------- Type: AREA ----------
+function makeArea() {
+  // Given some elements, find S
+  const variant = pick(['ab', 'ch', 'cathProj', 'hypAlt']);
+  if (variant === 'ab') {
+    const [a, b, c] = pick(PYTH_TRIPLES);
+    return {
+      title: 'Лице на триъгълник',
+      text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катетите <span class="m">a</span> = ${a} и <span class="m">b</span> = ${b}.`,
+      given: `<b>Дадено:</b> ∠C = 90°, a = ${a}, b = ${b}`,
+      find: 'Намерете лицето <span class="m">S</span> и хипотенузата <span class="m">c</span>.',
+      answers: [
+        {label: 'S', expected: num((a*b)/2)},
+        {label: 'c', expected: num(c)}
+      ],
+      steps: [
+        `S = ${frac('a·b', 2)} = ${frac(`${a}·${b}`, 2)} = ${(a*b)/2}.`,
+        `c = ${sqr('a<sup>2</sup>+b<sup>2</sup>')} = ${c}.`
+      ],
+      finalAnswer: `S = ${(a*b)/2}, &nbsp; c = ${c}`,
+      diff: '★ ☆ ☆'
+    };
+  } else if (variant === 'ch') {
+    const [a, b, c] = pick(PYTH_TRIPLES);
+    const hN = makeNum(a*b, c, 1);
+    return {
+      title: 'Лице чрез хипотенуза и височина',
+      text: `Хипотенузата на правоъгълен триъгълник е <span class="m">c</span> = ${c}, а височината към нея е <span class="m">h<sub>c</sub></span> = ${renderNum(hN)}.`,
+      given: `<b>Дадено:</b> c = ${c}, h<sub>c</sub> = ${renderNum(hN)}`,
+      find: 'Намерете лицето <span class="m">S</span>.',
+      answers: [
+        {label: 'S', expected: makeNum(a*b, 2, 1)}
+      ],
+      steps: [
+        `S = ${frac('c·h<sub>c</sub>', 2)} = ${frac(`${c}·${renderNum(hN)}`, 2)} = ${(a*b)/2}.`
+      ],
+      finalAnswer: `S = ${(a*b)/2}`,
+      diff: '★ ☆ ☆'
+    };
+  } else if (variant === 'cathProj') {
+    const setups = [{a:15, a1:9}, {a:20, a1:16}, {a:6, a1:4}, {a:12, a1:9}];
+    const {a, a1} = pick(setups);
+    const c = a*a/a1;
+    const b1 = c - a1;
+    const b2 = c*b1;
+    const bN = nSqrt(num(b2));
+    const SN = makeNum(a, 2, 1); // a*b/2 in num form
+    const SN_real = nMul(num(a), nMul(bN, makeNum(1, 2, 1)));
+    return {
+      title: 'Лице чрез катет и проекция',
+      text: `В правоъгълен триъгълник <span class="m">ABC</span> са дадени катет <span class="m">a</span> = ${a} и неговата проекция <span class="m">a<sub>1</sub></span> = ${a1}.`,
+      given: `<b>Дадено:</b> ∠C = 90°, a = ${a}, a<sub>1</sub> = ${a1}`,
+      find: 'Намерете лицето <span class="m">S</span>, другия катет <span class="m">b</span> и хипотенузата <span class="m">c</span>.',
+      answers: [
+        {label: 'c', expected: num(c)},
+        {label: 'b', expected: bN},
+        {label: 'S', expected: SN_real}
+      ],
+      steps: [
+        `c = ${frac('a<sup>2</sup>', 'a<sub>1</sub>')} = ${frac(a*a, a1)} = ${c}.`,
+        `b<sub>1</sub> = c − a<sub>1</sub> = ${b1}, b<sup>2</sup> = c·b<sub>1</sub> = ${b2}, b = ${renderNum(bN)}.`,
+        `S = ${frac('a·b', 2)} = ${frac(`${a}·${renderNum(bN)}`, 2)} = ${renderNum(SN_real)}.`
+      ],
+      finalAnswer: `c = ${c}, &nbsp; b = ${renderNum(bN)}, &nbsp; S = ${renderNum(SN_real)}`,
+      diff: '★ ★ ☆'
+    };
+  } else {
+    const cases = [{c:13, h:6, S:39}, {c:25, h:12, S:150}, {c:10, h:4, S:20}, {c:5, h:2, S:5}];
+    const {c, h, S} = pick(cases);
+    return {
+      title: 'Лице чрез хипотенуза и височина',
+      text: `Хипотенузата на правоъгълен триъгълник е <span class="m">c</span> = ${c}, а височината към нея е <span class="m">h<sub>c</sub></span> = ${h}.`,
+      given: `<b>Дадено:</b> c = ${c}, h<sub>c</sub> = ${h}`,
+      find: 'Намерете лицето <span class="m">S</span>.',
+      answers: [
+        {label: 'S', expected: num(S)}
+      ],
+      steps: [
+        `S = ${frac('c·h<sub>c</sub>', 2)} = ${frac(`${c}·${h}`, 2)} = ${S}.`
+      ],
+      finalAnswer: `S = ${S}`,
+      diff: '★ ☆ ☆'
+    };
+  }
+}
+
+// ---------- Type: INSCRIBED CIRCLE ----------
+function makeIncircle() {
+  const variant = pick(['ab', 'all']);
+  if (variant === 'ab') {
+    const [a, b, c] = pick(PYTH_TRIPLES);
+    const r = (a + b - c) / 2;
+    return {
+      title: 'Радиус на вписана окръжност',
+      text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катетите <span class="m">a</span> = ${a} и <span class="m">b</span> = ${b}.`,
+      given: `<b>Дадено:</b> ∠C = 90°, a = ${a}, b = ${b}`,
+      find: 'Намерете хипотенузата <span class="m">c</span> и радиуса <span class="m">r</span> на вписаната окръжност.',
+      answers: [
+        {label: 'c', expected: num(c)},
+        {label: 'r', expected: num(r)}
+      ],
+      steps: [
+        `c = ${sqr('a<sup>2</sup>+b<sup>2</sup>')} = ${sqr(a*a+b*b)} = ${c}.`,
+        `r = ${frac('a + b − c', 2)} = ${frac(`${a} + ${b} − ${c}`, 2)} = ${r}.`
+      ],
+      finalAnswer: `c = ${c}, &nbsp; r = ${r}`,
+      diff: '★ ★ ☆'
+    };
+  } else {
+    const [a, b, c] = pick(PYTH_TRIPLES);
+    const r = (a + b - c) / 2;
+    const R = c / 2;
+    const S = (a * b) / 2;
+    return {
+      title: 'Вписана и описана окр.',
+      text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катетите <span class="m">a</span> = ${a} и <span class="m">b</span> = ${b}.`,
+      given: `<b>Дадено:</b> ∠C = 90°, a = ${a}, b = ${b}`,
+      find: 'Намерете <span class="m">c</span>, <span class="m">S</span>, <span class="m">R</span> (описана) и <span class="m">r</span> (вписана).',
+      answers: [
+        {label: 'c', expected: num(c)},
+        {label: 'S', expected: num(S)},
+        {label: 'R', expected: makeNum(c, 2, 1)},
+        {label: 'r', expected: num(r)}
+      ],
+      steps: [
+        `c = ${sqr('a<sup>2</sup>+b<sup>2</sup>')} = ${c}.`,
+        `S = ${frac('a·b', 2)} = ${S}.`,
+        `R = ${frac('c', 2)} = ${c/2}.`,
+        `r = ${frac('a + b − c', 2)} = ${r}.`
+      ],
+      finalAnswer: `c = ${c}, &nbsp; S = ${S}, &nbsp; R = ${c/2}, &nbsp; r = ${r}`,
+      diff: '★ ★ ☆'
+    };
+  }
+}
+
+// ---------- Type: COORDINATE SYSTEM ----------
+function makeCoord() {
+  const variant = pick(['dist', 'unknown']);
+  if (variant === 'dist') {
+    const A = [rnd(1,12), rnd(1,12)];
+    const B = [rnd(-8,0), rnd(-8,0)];
+    const dx = A[0] - B[0], dy = A[1] - B[1];
+    const d2 = dx*dx + dy*dy;
+    const dN = nSqrt(num(d2));
+    return {
+      title: 'Координатна система',
+      text: `В координатна система <span class="m">Oxy</span> са дадени точките <span class="m">A</span>(${A[0]}; ${A[1]}) и <span class="m">B</span>(${B[0]}; ${B[1]}).`,
+      given: `<b>Дадено:</b> A(${A[0]}; ${A[1]}), B(${B[0]}; ${B[1]})`,
+      find: 'Намерете дължината на отсечката <span class="m">AB</span>.',
+      answers: [
+        {label: 'AB', expected: dN}
+      ],
+      steps: [
+        `AB = ${sqr('(x<sub>A</sub>−x<sub>B</sub>)<sup>2</sup> + (y<sub>A</sub>−y<sub>B</sub>)<sup>2</sup>')}`,
+        `AB = ${sqr(`(${A[0]}−(${B[0]}))<sup>2</sup> + (${A[1]}−(${B[1]}))<sup>2</sup>`)} = ${sqr(`${dx*dx} + ${dy*dy}`)} = ${sqr(d2)} = ${renderNum(dN)}.`
+      ],
+      finalAnswer: `AB = ${renderNum(dN)}`,
+      diff: '★ ☆ ☆'
+    };
+  } else {
+    // AB known, A=(a; 2a), B=(-2; 0), find a (positive)
+    const cases = [
+      {AB: 10, B: [-2, 0]},  // (a+2)^2 + 4a^2 = 100 → 5a^2 + 4a - 96 = 0 → a=4
+      {AB: 5, B: [1, 0]},
+      {AB: 13, B: [-1, 0]}
+    ];
+    const c = cases[0]; // use a=4 case
+    return {
+      title: 'Координатна система',
+      text: `В координатна система <span class="m">Oxy</span> е дадено <span class="m">AB</span> = 10, <span class="m">A</span>(<em>a</em>; 2<em>a</em>) и <span class="m">B</span>(−2; 0). Точката <span class="m">A</span> е в първи квадрант.`,
+      given: `<b>Дадено:</b> AB = 10, &nbsp; A(a; 2a), &nbsp; B(−2; 0), &nbsp; a > 0`,
+      find: 'Намерете координатите на точка <span class="m">A</span>.',
+      answers: [
+        {label: 'a', expected: num(4)}
+      ],
+      steps: [
+        `AB<sup>2</sup> = (a − (−2))<sup>2</sup> + (2a − 0)<sup>2</sup> = (a+2)<sup>2</sup> + 4a<sup>2</sup> = 100.`,
+        `5a<sup>2</sup> + 4a − 96 = 0. Решенията са a = 4 и a = −${frac(24, 5)}.`,
+        `Тъй като A е в първи квадрант: a > 0 ⇒ a = 4. Тогава A(4; 8).`
+      ],
+      finalAnswer: `a = 4, &nbsp; A(4; 8)`,
+      diff: '★ ★ ★'
+    };
+  }
+}
+
+const BUILDERS = {
+  pyth: makePyth, catheti: makeCatheti, proj: makeProj, cathProj: makeCathProj,
+  hypProj: makeHypProj, altitude: makeAltitude, cathHyp: makeCathHyp,
+  cathAlt: makeCathAlt, hypAlt: makeHypAlt,
+  area: makeArea,
+  incircle: makeIncircle, coord: makeCoord
+};
+
+// ============================================================
+// UI
+// ============================================================
+
+let activeInput = null;
+
+function generateTask() {
+  const type = currentType === 'any' ? pick(TYPES) : currentType;
+  let task;
+  try { task = BUILDERS[type](); }
+  catch(e) { console.error(e); task = makePyth(); }
+
+  currentTask = task;
+  counter++;
+
+  $('taskNum').textContent = `Задача №${counter}`;
+  $('diff').innerHTML = task.diff;
+  $('taskTitle').textContent = task.title;
+  $('taskText').innerHTML = task.text;
+  $('givenBox').innerHTML = task.given;
+  $('findBox').innerHTML = task.find;
+
+  // Build answer inputs
+  const inputsHtml = task.answers.map((a, i) =>
+    `<div class="answer-row">
+       <label>${a.label}</label>
+       <span class="eq">=</span>
+       <input class="ans-input" id="ans${i}" type="text" autocomplete="off" data-idx="${i}">
+       <span class="ans-status" id="st${i}"></span>
+     </div>`
+  ).join('');
+  $('answerInputs').innerHTML = inputsHtml;
+
+  // Wire focus
+  document.querySelectorAll('.ans-input').forEach(el => {
+    el.addEventListener('focus', () => activeInput = el);
+    el.addEventListener('input', () => {
+      el.classList.remove('correct', 'wrong');
+      const st = $('st' + el.dataset.idx);
+      if (st) st.textContent = '';
+    });
+  });
+  // Auto-focus first
+  if (task.answers.length > 0) {
+    setTimeout(() => {
+      const first = document.querySelector('.ans-input');
+      if (first) { first.focus(); activeInput = first; }
+    }, 50);
+  }
+
+  $('solSteps').innerHTML = task.steps.map(s => `<div class="solution-step">${s}</div>`).join('');
+  $('ansBox').innerHTML = `<b>Отговор:</b> &nbsp; ${task.finalAnswer}`;
+  $('solBox').classList.remove('show');
+  $('solBtn').textContent = 'Покажи решение';
+
+  $('seedTxt').textContent = `// type: ${type} · seed: ${Date.now().toString(36)}`;
+}
+
+function checkAnswers() {
+  if (!currentTask) return;
+  let allCorrect = true;
+  let anyAnswered = false;
+  currentTask.answers.forEach((a, i) => {
+    const el = $('ans' + i);
+    const st = $('st' + i);
+    if (!el) return;
+    const val = el.value.trim();
+    if (val === '') {
+      el.classList.remove('correct', 'wrong');
+      st.textContent = '';
+      allCorrect = false;
+      return;
+    }
+    anyAnswered = true;
+    const parsed = parseAnswer(val);
+    if (parsed && nEq(parsed, a.expected)) {
+      el.classList.remove('wrong');
+      el.classList.add('correct');
+      st.textContent = '✓';
+      st.classList.remove('no');
+      st.classList.add('ok');
+    } else {
+      el.classList.remove('correct');
+      el.classList.add('wrong');
+      st.textContent = '✗';
+      st.classList.remove('ok');
+      st.classList.add('no');
+      allCorrect = false;
+    }
+  });
+}
+
+// Virtual keyboard
+$('vkbd').addEventListener('click', (e) => {
+  const btn = e.target.closest('.vkey');
+  if (!btn) return;
+  const k = btn.dataset.k;
+  if (!activeInput) {
+    const first = document.querySelector('.ans-input');
+    if (first) { first.focus(); activeInput = first; }
+    else return;
+  }
+  const el = activeInput;
+  const start = el.selectionStart || el.value.length;
+  const end = el.selectionEnd || el.value.length;
+  let insert = '';
+
+  if (k === 'back') {
+    if (start === end && start > 0) {
+      el.value = el.value.slice(0, start - 1) + el.value.slice(end);
+      el.selectionStart = el.selectionEnd = start - 1;
+    } else {
+      el.value = el.value.slice(0, start) + el.value.slice(end);
+      el.selectionStart = el.selectionEnd = start;
+    }
+    el.dispatchEvent(new Event('input'));
+    el.focus();
+    return;
+  }
+  if (k === 'clear') {
+    el.value = '';
+    el.dispatchEvent(new Event('input'));
+    el.focus();
+    return;
+  }
+  if (k === 'space') insert = ' ';
+  else insert = k;
+
+  el.value = el.value.slice(0, start) + insert + el.value.slice(end);
+  const newPos = start + insert.length;
+  el.selectionStart = el.selectionEnd = newPos;
+  el.dispatchEvent(new Event('input'));
+  el.focus();
+});
+
+// Buttons
+$('newBtn').addEventListener('click', generateTask);
+$('checkBtn').addEventListener('click', checkAnswers);
+$('solBtn').addEventListener('click', () => {
+  const sol = $('solBox');
+  sol.classList.toggle('show');
+  $('solBtn').textContent = sol.classList.contains('show') ? 'Скрий решение' : 'Покажи решение';
+});
+
+// Type chips
+document.querySelectorAll('#typeControls .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#typeControls .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    currentType = chip.dataset.type;
+    generateTask();
+  });
+});
+
+// Enter key checks
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && document.activeElement && document.activeElement.classList.contains('ans-input')) {
+    checkAnswers();
+  }
+});
+
+generateTask();
+</script>
+</body>
+</html>
