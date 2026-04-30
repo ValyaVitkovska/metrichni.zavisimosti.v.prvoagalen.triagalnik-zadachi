@@ -6,32 +6,57 @@
 <title>Метрични зависимости в правоъгълен триъгълник</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  /* ========================================================
+     SVETLA / TUMNA TEMA
+     ======================================================== */
   :root {
-    --bg: #ffead6; /* Светлооранжев фон */
+    --bg: #ffead6;
     --paper: #ffffff;
     --ink: #14110f;
     --ink-soft: #3a342c;
     --accent: #7a1a26;
     --accent-soft: #c89090;
-    --gold: #b38030; /* Малко по-тъмно златисто за по-добър контраст на жълтия фон */
+    --gold: #b38030;
     --line: #14110f;
-    --grid: #e2dfcc; /* Топъл сив/жълтеникав цвят за мрежата */
-    --highlight: #ffe0b2; /* По-наситено светлооранжево за акценти */
+    --grid: #e2dfcc;
+    --highlight: #ffe0b2;
     --green: #1f5d44;
     --red: #a51a1a;
     --teal: #1f5d6a;
+    --muted: #8a8377;
+    --hint-bg: #fdf6ec;
+    --series-bg: rgba(255, 224, 178, 0.5);
+    --shadow-color: #14110f;
+  }
+
+  [data-theme="dark"] {
+    --bg: #2a221a;          /* топъл кафяв вместо черен */
+    --paper: #3d3128;
+    --ink: #f5e6d3;          /* кремав */
+    --ink-soft: #c9b89a;
+    --accent: #e08899;       /* по-светъл бордо за контраст */
+    --accent-soft: #7a4a52;
+    --gold: #e0b070;
+    --line: #f5e6d3;
+    --grid: #4a3d32;
+    --highlight: #5a4530;
+    --green: #6dbf95;
+    --red: #e88080;
+    --teal: #6db0c2;
+    --muted: #8a8377;
+    --hint-bg: #4a3d32;
+    --series-bg: rgba(90, 69, 48, 0.5);
+    --shadow-color: #0a0805;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
     font-family: 'Inter', sans-serif;
-    font-size: 18px;
     background: var(--bg);
     color: var(--ink);
     min-height: 100vh;
     background-image:
-      /* Subtle math-themed pattern: dotted graph paper + radial warmth */
       radial-gradient(ellipse at 15% 20%, rgba(168, 117, 40, 0.12) 0%, transparent 45%),
       radial-gradient(ellipse at 85% 80%, rgba(122, 26, 38, 0.10) 0%, transparent 50%),
       radial-gradient(circle at 50% 50%, transparent 0%, rgba(20, 17, 15, 0.04) 100%),
@@ -39,6 +64,7 @@
       repeating-linear-gradient(90deg, rgba(20, 17, 15, 0.045) 0px, rgba(20, 17, 15, 0.045) 1px, transparent 1px, transparent 32px);
     background-attachment: fixed;
     position: relative;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   body::before {
@@ -54,7 +80,11 @@
     opacity: 0.4;
   }
 
-  /* Decorative geometric symbols floating in background corners */
+  [data-theme="dark"] body::before {
+    background-image:
+      radial-gradient(circle 1.5px at 16px 16px, rgba(245, 230, 211, 0.12) 1px, transparent 1.5px);
+  }
+
   body::after {
     content: "";
     position: fixed;
@@ -69,109 +99,119 @@
     background-size: 360px 360px, 320px 320px;
   }
 
-  .container {
-    position: relative;
-    z-index: 1;
-  }
+  .container { position: relative; z-index: 1; }
+  .container-inner { max-width: 1320px; margin: 0 auto; padding: 36px 24px; }
 
-  .container-inner {
-    max-width: 1320px;
-    margin: 0 auto;
-    padding: 36px 24px;
+  /* ========================================================
+     TOP BAR — theme toggle + mode switcher (student/teacher)
+     ======================================================== */
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
   }
+  .mode-switch {
+    display: none;
+    gap: 0;
+    border: 1.5px solid var(--ink);
+    background: var(--paper);
+  }
+  body.teacher-unlocked .mode-switch {
+    display: inline-flex;
+  }
+  .mode-switch button {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    background: transparent;
+    color: var(--ink);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.15s ease;
+  }
+  .mode-switch button.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .mode-switch button:not(.active):hover {
+    background: var(--highlight);
+  }
+  .topbar-actions { display: flex; gap: 8px; align-items: center; }
+  .icon-btn {
+    width: 38px;
+    height: 38px;
+    border: 1.5px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+  .icon-btn:hover { background: var(--highlight); }
 
+  /* ========================================================
+     HEADER
+     ======================================================== */
   header {
     text-align: center;
-    margin-bottom: 32px;
-    padding-bottom: 24px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
     border-bottom: 2px solid var(--ink);
     position: relative;
   }
-
   header::before, header::after {
     content: "❦";
     color: var(--gold);
-    font-size: 20px;
+    font-size: 18px;
     position: absolute;
-    bottom: 14px;
+    bottom: 12px;
   }
   header::before { left: 50%; transform: translateX(-72px); }
   header::after { left: 50%; transform: translateX(58px); }
 
   .eyebrow {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
+    font-size: 12px;
     letter-spacing: 0.3em;
     text-transform: uppercase;
     color: var(--accent);
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     font-weight: 600;
   }
-
-  /* Credits & Image Section */
-  .header-figure {
-    margin: 20px auto 28px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-  }
-  .header-figure img {
-    max-width: 100%;
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    border: 3px solid var(--line);
-    box-shadow: 6px 6px 0 var(--ink);
-    margin-bottom: 20px;
-    background: var(--paper);
-  }
-  .header-figcaption {
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    color: var(--ink-soft);
-    font-weight: 500;
-    line-height: 1.5;
-    padding: 6px 16px;
-    background: var(--highlight);
-    border-radius: 30px;
-    border: 1px dashed var(--gold);
-    display: inline-block;
-  }
-  .header-figcaption b {
-    color: var(--ink);
-    font-weight: 700;
-  }
-
   h1 {
     font-family: 'Cormorant Garamond', serif;
     font-weight: 700;
-    font-size: clamp(32px, 4.5vw, 50px);
+    font-size: clamp(28px, 4vw, 44px);
     line-height: 1.1;
     letter-spacing: -0.01em;
   }
-
-  h1 em {
-    color: var(--accent);
-    font-style: italic;
-  }
-
+  h1 em { color: var(--accent); font-style: italic; }
   .subtitle {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
-    font-size: 21px;
+    font-size: 19px;
     color: var(--ink-soft);
-    margin-top: 8px;
+    margin-top: 6px;
     font-weight: 500;
   }
 
+  /* ========================================================
+     LAYOUT
+     ======================================================== */
   .layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 24px;
   }
-
   @media (max-width: 980px) {
     .layout { grid-template-columns: 1fr; }
   }
@@ -179,18 +219,17 @@
   .panel {
     background: var(--paper);
     border: 2px solid var(--line);
-    padding: 26px;
+    padding: 24px;
     position: relative;
-    box-shadow: 6px 6px 0 var(--ink);
+    box-shadow: 6px 6px 0 var(--shadow-color);
   }
-
   .panel-label {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 0.25em;
     text-transform: uppercase;
     color: var(--gold);
-    margin-bottom: 18px;
+    margin-bottom: 16px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -204,6 +243,9 @@
     opacity: 0.25;
   }
 
+  /* ========================================================
+     DIAGRAM
+     ======================================================== */
   .diagram-wrap {
     background: var(--paper);
     padding: 14px;
@@ -214,56 +256,63 @@
     background-size: 24px 24px;
     background-position: -1px -1px;
   }
-
   svg.triangle-svg {
-    width: 80%;      /* Намален мащаб на чертежа */
-    margin: 0 auto;  /* Центриране */
+    width: 100%;
+    max-width: 540px;
+    margin: 0 auto;
     height: auto;
     display: block;
   }
+  /* Dynamic highlight states for SVG elements */
+  .svg-given { stroke: var(--accent) !important; stroke-width: 4.5 !important; }
+  .svg-given-text { fill: var(--accent) !important; font-weight: 800 !important; }
+  .svg-found { stroke: var(--green) !important; stroke-width: 4.5 !important; }
+  .svg-found-text { fill: var(--green) !important; font-weight: 800 !important; }
+  .svg-dim { opacity: 0.55 !important; }
+  .svg-el { transition: stroke 0.4s ease, fill 0.4s ease, opacity 0.4s ease, stroke-width 0.4s ease; }
 
+  /* Coordinate-system diagram (alternate) */
+  .coord-diagram { display: none; }
+  .triangle-mode .coord-diagram { display: none; }
+  .coord-mode .triangle-svg { display: none; }
+  .coord-mode .coord-diagram { display: block; }
+
+  /* ========================================================
+     FORMULAS
+     ======================================================== */
   .formulas {
     margin-top: 16px;
     padding: 14px 18px;
-    background: #f7dfc8; /* Светлооранжево-бежово, за да отива на фона */
+    background: var(--hint-bg);
     border-left: 4px solid var(--accent);
     border-top: 1px solid var(--grid);
     border-right: 1px solid var(--grid);
     border-bottom: 1px solid var(--grid);
     border-radius: 4px;
   }
-
   .formulas h3 {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 26px;
+    font-size: 22px;
     font-weight: 700;
     margin-bottom: 8px;
   }
-
   .formula-list {
     display: grid;
     gap: 8px 12px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 700;
     color: var(--ink);
     line-height: 1.4;
   }
-
-  .formula-list.cols-2 {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .formula-list span {
-    padding: 2px 0;
-  }
-
+  .formula-list.cols-2 { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 600px) { .formula-list.cols-2 { grid-template-columns: 1fr; } }
+  .formula-list span { padding: 2px 0; }
   .formula-list b { color: var(--accent); font-weight: 800; }
   .formula-list em { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.15em; font-weight: 700; }
-
   .formula-section-title {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
+    font-size: 11px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--gold);
@@ -275,84 +324,217 @@
   }
   .formula-section-title:first-child { margin-top: 0; padding-top: 0; border-top: none; }
 
-  /* Instructions panel */
+  /* Highlighted formula (relevant to current task) */
+  .formula-list span.formula-highlight {
+    background: var(--highlight);
+    padding: 4px 8px;
+    margin: -2px -8px;
+    border-radius: 4px;
+    box-shadow: 2px 2px 0 var(--shadow-color);
+  }
+
+  /* ========================================================
+     INSTRUCTIONS
+     ======================================================== */
   details.instructions {
-    background: #fdf6ec;
+    background: var(--hint-bg);
     border: 1px solid var(--grid);
     border-left: 4px solid var(--gold);
-    margin-bottom: 20px;
-    padding: 12px 16px;
+    margin-bottom: 16px;
+    padding: 10px 14px;
     border-radius: 4px;
   }
   details.instructions summary {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 15px;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--ink);
     cursor: pointer;
-    list-style: none; /* За някои браузъри */
+    list-style: none;
     display: flex;
     align-items: center;
     gap: 8px;
   }
-  details.instructions summary::-webkit-details-marker {
-    display: none;
-  }
+  details.instructions summary::-webkit-details-marker { display: none; }
   details.instructions summary::before {
     content: "▼";
     color: var(--gold);
     font-size: 10px;
     transition: transform 0.2s;
   }
-  details.instructions[open] summary::before {
-    transform: rotate(-180deg);
-  }
+  details.instructions[open] summary::before { transform: rotate(-180deg); }
   details.instructions ul {
-    margin-top: 12px;
+    margin-top: 10px;
     padding-left: 20px;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 1.5;
     color: var(--ink-soft);
   }
-  details.instructions li {
-    margin-bottom: 6px;
-  }
-  details.instructions b {
-    color: var(--ink);
-  }
+  details.instructions li { margin-bottom: 5px; }
+  details.instructions b { color: var(--ink); }
 
-  /* Task panel */
-  .task-controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 7px;
-    margin-bottom: 18px;
+  /* ========================================================
+     TYPE SELECTOR — GROUPED
+     ======================================================== */
+  .type-groups {
+    margin-bottom: 16px;
+    border: 1px solid var(--grid);
+    background: var(--hint-bg);
+    border-radius: 4px;
+    padding: 10px;
   }
+  .random-row {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed var(--grid);
+  }
+  .group {
+    padding: 8px 10px;
+    background: var(--series-bg);
+    border-left: 3px solid var(--gold);
+    margin-bottom: 6px;
+    border-radius: 0 4px 4px 0;
+  }
+  .group:last-child { margin-bottom: 0; }
+  .group-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .stars { color: var(--gold); letter-spacing: 0.05em; }
 
   .chip {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 0.05em;
-    padding: 7px 12px;
+    padding: 6px 10px;
     border: 1.5px solid var(--ink);
-    background: transparent;
+    background: var(--paper);
     color: var(--ink);
     cursor: pointer;
     text-transform: uppercase;
     transition: all 0.15s ease;
     font-weight: 600;
+    margin: 2px;
+    min-height: 32px;
   }
   .chip:hover { background: var(--highlight); }
   .chip.active {
     background: var(--ink);
     color: var(--paper);
   }
+  .chip.random-chip {
+    background: var(--accent);
+    color: var(--paper);
+    border-color: var(--accent);
+    font-size: 12px;
+    padding: 8px 14px;
+  }
+  .chip.random-chip.active {
+    background: var(--ink);
+    border-color: var(--ink);
+  }
 
+  /* ========================================================
+     SERIES PROGRESS
+     ======================================================== */
+  .series-bar {
+    background: var(--series-bg);
+    border: 1px solid var(--grid);
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .series-info {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .series-info b { color: var(--ink); }
+  .progress-dots {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .pdot {
+    width: 24px;
+    height: 24px;
+    border: 1.5px solid var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink);
+    background: var(--paper);
+  }
+  .pdot.ok { background: var(--green); color: #fff; border-color: var(--green); }
+  .pdot.no { background: var(--red); color: #fff; border-color: var(--red); }
+  .pdot.cur { background: var(--highlight); border-width: 2px; }
+  .series-controls { display: flex; gap: 6px; align-items: center; }
+  .series-len-input {
+    width: 50px;
+    padding: 5px 8px;
+    border: 1.5px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .series-summary {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    text-align: center;
+    display: none;
+  }
+  .series-summary.show { display: block; }
+  .series-summary h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .series-summary .pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    color: var(--gold);
+    font-weight: 700;
+  }
+  .series-summary .stat {
+    font-size: 13px;
+    color: var(--paper);
+    opacity: 0.8;
+    margin-top: 4px;
+  }
+
+  /* ========================================================
+     TASK
+     ======================================================== */
   .task-meta {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
+    font-size: 11px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--ink-soft);
@@ -362,74 +544,68 @@
     align-items: center;
     font-weight: 600;
   }
-
   .difficulty {
     color: var(--gold);
     letter-spacing: 0.1em;
-    font-size: 16px;
+    font-size: 14px;
   }
-
   .task-title {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 32px;
+    font-size: 26px;
     font-weight: 700;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     line-height: 1.2;
   }
-
   .task-text {
-    font-size: 20px;
-    line-height: 1.65;
+    font-size: 16px;
+    line-height: 1.6;
     color: var(--ink);
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     font-weight: 500;
   }
-
   .given {
     background: var(--highlight);
-    padding: 12px 14px;
+    padding: 11px 14px;
     border-left: 4px solid var(--gold);
-    margin-bottom: 14px;
-    font-size: 18px;
+    margin-bottom: 12px;
+    font-size: 15px;
     font-weight: 500;
   }
-
   .given b {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
-    font-size: 20px;
+    font-size: 17px;
     font-weight: 700;
   }
-
   .find {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
-    font-size: 22px;
+    font-size: 18px;
     color: var(--accent);
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     line-height: 1.4;
     font-weight: 600;
   }
   .find::before { content: "❯ "; color: var(--gold); }
 
-  /* Answer input + virtual keyboard */
+  /* ========================================================
+     ANSWER FORM
+     ======================================================== */
   .answer-form {
     background: var(--paper);
     border: 2px dashed var(--ink);
-    padding: 16px;
+    padding: 14px;
     margin-bottom: 12px;
   }
-
   .answer-form-label {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
+    font-size: 11px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--ink-soft);
     margin-bottom: 10px;
     font-weight: 600;
   }
-
   .answer-row {
     display: flex;
     align-items: center;
@@ -437,25 +613,24 @@
     margin-bottom: 10px;
     flex-wrap: wrap;
   }
-
   .answer-row label {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
-    font-size: 24px;
+    font-size: 21px;
     min-width: 44px;
     font-weight: 700;
   }
-
-  .answer-row .eq { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 700; }
-
+  .answer-row .eq { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 700; }
   .ans-input {
     flex: 1;
     min-width: 110px;
+    min-height: 44px;          /* touch target */
     padding: 10px 12px;
     border: 1.5px solid var(--ink);
     background: var(--bg);
+    color: var(--ink);
     font-family: 'Cormorant Garamond', serif;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 600;
     outline: none;
   }
@@ -464,79 +639,106 @@
     background: var(--highlight);
   }
   .ans-input.correct {
-    background: #e8f5ec;
+    background: rgba(31, 93, 68, 0.15);
     border-color: var(--green);
     color: var(--green);
   }
   .ans-input.wrong {
-    background: #fde8e8;
+    background: rgba(165, 26, 26, 0.15);
     border-color: var(--red);
     color: var(--red);
   }
-
   .ans-status {
-    font-size: 20px;
-    width: 26px;
+    font-size: 22px;
+    width: 28px;
     text-align: center;
     font-weight: 700;
   }
   .ans-status.ok { color: var(--green); }
   .ans-status.no { color: var(--red); }
 
-  /* Virtual keyboard */
+  /* Toggle keyboard button */
+  .kbd-toggle-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+  }
+  .kbd-toggle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 6px 10px;
+    border: 1.5px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .kbd-toggle:hover { background: var(--highlight); }
+  .kbd-toggle.active { background: var(--ink); color: var(--paper); }
+
   .vkbd {
     margin-top: 12px;
-    padding: 12px;
+    padding: 10px;
     background: var(--bg);
     border: 1.5px solid var(--ink);
+    display: none;
   }
-
+  .vkbd.show { display: block; }
   .vkbd-title {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
+    font-size: 10px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--ink-soft);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     font-weight: 600;
   }
-
   .vkbd-keys {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    gap: 4px;
   }
-
   .vkey {
-    min-width: 42px;
-    padding: 8px 12px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px 10px;
     border: 1.5px solid var(--ink);
     background: var(--paper);
+    color: var(--ink);
     cursor: pointer;
     font-family: 'Cormorant Garamond', serif;
-    font-size: 22px;
+    font-size: 19px;
     font-weight: 700;
     transition: all 0.1s ease;
   }
   .vkey:hover { background: var(--highlight); }
   .vkey:active { background: var(--ink); color: var(--paper); }
-  .vkey.wide { min-width: 70px; font-size: 16px; font-family: 'JetBrains Mono', monospace; }
+  .vkey.wide { min-width: 70px; font-size: 13px; font-family: 'JetBrains Mono', monospace; }
   .vkey.special { color: var(--accent); }
 
+  /* ========================================================
+     ACTION BUTTONS
+     ======================================================== */
   .actions {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
-    padding-top: 14px;
+    padding-top: 12px;
     border-top: 1px dashed var(--grid);
+    align-items: center;
   }
-
   button.btn {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 15px;
+    font-size: 12px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    padding: 11px 18px;
+    padding: 11px 16px;
+    min-height: 44px;
     border: 1.5px solid var(--ink);
     background: var(--ink);
     color: var(--paper);
@@ -556,33 +758,99 @@
     background: var(--ink);
     color: var(--paper);
   }
-  button.btn.primary { background: var(--accent); border-color: var(--accent); }
-  button.btn.primary:hover { background: var(--ink); border-color: var(--ink); }
+  button.btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 3px 3px 0 var(--shadow-color);
+  }
+  button.btn.primary:hover {
+    background: var(--ink);
+    border-color: var(--ink);
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 var(--shadow-color);
+  }
+  button.btn.tertiary {
+    background: transparent;
+    color: var(--ink-soft);
+    border-color: var(--grid);
+    font-size: 11px;
+    padding: 8px 12px;
+  }
+  button.btn.tertiary:hover {
+    background: var(--hint-bg);
+    color: var(--ink);
+    border-color: var(--ink);
+  }
 
+  /* ========================================================
+     HINTS (3 levels)
+     ======================================================== */
+  .hint-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--grid);
+  }
+  .hint-card {
+    margin-top: 12px;
+    background: var(--hint-bg);
+    border-left: 4px solid var(--gold);
+    padding: 12px 14px;
+    border-radius: 0 4px 4px 0;
+    border-top: 1px solid var(--grid);
+    border-right: 1px solid var(--grid);
+    border-bottom: 1px solid var(--grid);
+    display: none;
+  }
+  .hint-card.show { display: block; }
+  .hint-card .hstep {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .hint-card .htext {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .hint-card .htext em {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 1.1em;
+  }
+
+  /* ========================================================
+     SOLUTION
+     ======================================================== */
   .solution {
-    margin-top: 16px;
-    padding: 18px;
+    margin-top: 14px;
+    padding: 16px;
     background: var(--bg);
-    border: 1.5px solid var(--ink);
-    border-style: dashed;
+    border: 1.5px dashed var(--ink);
     display: none;
   }
   .solution.show { display: block; }
-
   .solution-title {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
-    font-size: 26px;
+    font-size: 22px;
     color: var(--accent);
     margin-bottom: 10px;
     font-weight: 700;
   }
-
   .solution-step {
-    font-size: 19px;
+    font-size: 15px;
     line-height: 1.6;
-    margin-bottom: 8px;
-    padding-left: 20px;
+    margin-bottom: 7px;
+    padding-left: 18px;
     position: relative;
     font-weight: 500;
   }
@@ -591,42 +859,148 @@
     position: absolute;
     left: 0;
     color: var(--gold);
-    font-size: 19px;
+    font-size: 15px;
   }
-
   .answer-final {
     margin-top: 12px;
     padding: 12px 14px;
     background: var(--ink);
     color: var(--paper);
     font-family: 'Cormorant Garamond', serif;
-    font-size: 21px;
+    font-size: 17px;
     text-align: center;
     font-weight: 700;
   }
 
+  /* ========================================================
+     TEACHER MODE
+     ======================================================== */
+  .teacher-panel { display: none; }
+  body.teacher-mode .student-panel { display: none; }
+  body.teacher-mode .teacher-panel { display: block; }
+
+  .teacher-controls-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .teacher-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .teacher-field label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .teacher-field input, .teacher-field select {
+    padding: 7px 10px;
+    border: 1.5px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    min-height: 36px;
+  }
+  .teacher-toggles {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .toggle-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .toggle-line input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  .teacher-preview {
+    background: #fff;
+    color: #14110f;
+    border: 1px dashed var(--ink);
+    padding: 14px;
+    margin-top: 14px;
+    font-size: 12px;
+    line-height: 1.5;
+    max-height: 350px;
+    overflow: auto;
+  }
+  .teacher-preview h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #14110f;
+    padding-bottom: 4px;
+  }
+  .teacher-preview .ptask {
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px dashed #ccc;
+  }
+  .teacher-preview .ptask:last-child { border-bottom: none; }
+
+  /* ========================================================
+     PRINT STYLES
+     ======================================================== */
+  @media print {
+    body { background: #fff; color: #000; }
+    body::before, body::after { display: none; }
+    .topbar, .icon-btn, .vkbd, .actions, .hint-row, .series-controls,
+    .answer-form-label, .kbd-toggle-row, .teacher-toggles, .teacher-controls-row,
+    .panel-label, details.instructions, .type-groups, .series-bar { display: none !important; }
+    .panel { box-shadow: none; border: 1px solid #000; page-break-inside: avoid; }
+    .layout { grid-template-columns: 1fr; gap: 16px; }
+    header::before, header::after { display: none; }
+    .answer-form { border: 1px solid #000; }
+    .ans-input { background: #fff; min-height: auto; padding: 4px 8px; }
+    .answer-final { background: #fff; color: #000; border: 1px solid #000; }
+    .solution { background: #fff; }
+    @page { margin: 12mm; }
+  }
+
+  body.print-preview .topbar,
+  body.print-preview .icon-btn { display: none; }
+
+  /* (Print of teacher tests now uses an iframe — see printTest() in JS) */
+
+  /* ========================================================
+     UTILITIES
+     ======================================================== */
   .seed {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     color: var(--ink-soft);
     opacity: 0.5;
   }
-
   footer {
-    margin-top: 36px;
-    padding-top: 16px;
+    margin-top: 32px;
+    padding-top: 14px;
     border-top: 1px solid var(--grid);
     text-align: center;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 0.2em;
     color: var(--ink-soft);
     text-transform: uppercase;
     font-weight: 600;
   }
 
-  /* Math styling */
-  .m { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.15em; font-weight: 700; }
+  .m { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.08em; font-weight: 700; }
   sup { font-size: 0.7em; font-weight: bold; }
   sub { font-size: 0.7em; font-weight: bold; }
 
@@ -643,10 +1017,9 @@
     padding: 0 0.15em;
   }
   .frac > span:first-child {
-    border-bottom: 2px solid currentColor; /* Удебелена дробна черта */
+    border-bottom: 2px solid currentColor;
   }
 
-  /* Textbook Square Root */
   .sqrt {
     display: inline-block;
     white-space: nowrap;
@@ -661,40 +1034,44 @@
   }
   .sqrt-val {
     display: inline-block;
-    border-top: 2px solid currentColor; /* Удебелена черта на корена */
+    border-top: 2px solid currentColor;
     padding-top: 0.03em;
     padding-left: 0.05em;
     padding-right: 0.1em;
   }
 </style>
 </head>
-<body>
+<body data-theme="light">
 <div class="container">
 <div class="container-inner">
 
+  <!-- TOP BAR: Mode + Theme -->
+  <div class="topbar">
+    <div class="mode-switch" role="tablist" aria-label="Режим">
+      <button id="modeStudent" class="active" role="tab" aria-selected="true">Ученик</button>
+      <button id="modeTeacher" role="tab" aria-selected="false">Учител</button>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="themeToggle" title="Превключи тема" aria-label="Превключи светла/тъмна тема">☾</button>
+    </div>
+  </div>
+
   <header>
     <div class="eyebrow">— Геометрия 9. клас —</div>
-    
-    <figure class="header-figure">
-      <!-- Изображението, поставено като лого. Скрито при грешка, за да не чупи дизайна -->
-      <img src="MZPT.png" alt="Метрични зависимости в правоъгълен триъгълник" onerror="this.style.display='none'">
-      <!-- Кредитите/надписът под него -->
-      <figcaption class="header-figcaption">
-        Идея и педагогически решения: <b>Валя Витковска</b> <span style="opacity:0.5; margin: 0 6px;">|</span> Реализация: <b>Claude, Gemini</b>
-      </figcaption>
-    </figure>
-
     <h1>Метрични <em>зависимости</em> в правоъгълен триъгълник</h1>
-    <div class="subtitle">Генератор на задачи с чертеж, формули и проверка</div>
+    <div class="subtitle">Генератор на задачи с динамичен чертеж и стъпаловидни подсказки</div>
   </header>
 
   <div class="layout">
 
-    <!-- LEFT: Diagram + formulas -->
-    <section class="panel">
+    <!-- ============================================================
+         LEFT PANEL: Diagram + Formulas
+         ============================================================ -->
+    <section class="panel" id="leftPanel">
       <div class="panel-label">Фигура · означения</div>
-      <div class="diagram-wrap">
-        <svg class="triangle-svg" viewBox="0 0 540 380" xmlns="http://www.w3.org/2000/svg">
+      <div class="diagram-wrap" id="diagramWrap">
+        <!-- Triangle diagram (default) -->
+        <svg class="triangle-svg" id="triSvg" viewBox="0 0 540 380" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="hatch" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(45)">
               <line x1="0" y1="0" x2="0" y2="7" stroke="#7a1a26" stroke-width="0.8" opacity="0.35"/>
@@ -707,66 +1084,109 @@
             </marker>
           </defs>
 
-          <!-- A=(60,290), B=(490,290), C=(360,70), H=(360,290) -->
-          <!-- AH = 300 (b1, longer), HB = 130 (a1, shorter) -->
-
           <polygon points="60,290 490,290 360,70" fill="url(#hatch)" opacity="0.45"/>
 
           <!-- Altitude h_c -->
-          <line x1="360" y1="70" x2="360" y2="290" stroke="#7a1a26" stroke-width="3" stroke-dasharray="7,4"/>
+          <line id="svg-h" class="svg-el" x1="360" y1="70" x2="360" y2="290" stroke="#7a1a26" stroke-width="3" stroke-dasharray="7,4"/>
 
-          <!-- Triangle sides (THICK) -->
-          <line x1="60" y1="290" x2="490" y2="290" stroke="#14110f" stroke-width="3.5"/>
-          <line x1="60" y1="290" x2="360" y2="70" stroke="#14110f" stroke-width="3.5"/>
-          <line x1="490" y1="290" x2="360" y2="70" stroke="#14110f" stroke-width="3.5"/>
+          <!-- Sides -->
+          <line id="svg-c-line" class="svg-el" x1="60" y1="290" x2="490" y2="290" stroke="#14110f" stroke-width="3.5"/>
+          <line id="svg-b-line" class="svg-el" x1="60" y1="290" x2="360" y2="70" stroke="#14110f" stroke-width="3.5"/>
+          <line id="svg-a-line" class="svg-el" x1="490" y1="290" x2="360" y2="70" stroke="#14110f" stroke-width="3.5"/>
 
-          <!-- Right angle marker at C -->
+          <!-- Right angle markers -->
           <path d="M 346.5,80.7 L 357.3,95.4 L 372,84.6 L 360,70 Z" fill="none" stroke="#14110f" stroke-width="2"/>
-
-          <!-- Right angle marker at H -->
           <rect x="360" y="272" width="18" height="18" fill="none" stroke="#7a1a26" stroke-width="2"/>
 
-          <!-- Vertices (bigger) -->
+          <!-- Vertices -->
           <circle cx="60" cy="290" r="5.5" fill="#14110f"/>
           <circle cx="490" cy="290" r="5.5" fill="#14110f"/>
           <circle cx="360" cy="70" r="5.5" fill="#14110f"/>
           <circle cx="360" cy="290" r="4.5" fill="#7a1a26"/>
 
-          <!-- Vertex labels (bigger, bolder) -->
+          <!-- Vertex labels -->
           <text x="36" y="312" font-family="Cormorant Garamond, serif" font-style="italic" font-size="30" font-weight="700" fill="#14110f">A</text>
           <text x="498" y="312" font-family="Cormorant Garamond, serif" font-style="italic" font-size="30" font-weight="700" fill="#14110f">B</text>
           <text x="350" y="58" font-family="Cormorant Garamond, serif" font-style="italic" font-size="30" font-weight="700" fill="#14110f">C</text>
           <text x="349" y="316" font-family="Cormorant Garamond, serif" font-style="italic" font-size="26" font-weight="700" fill="#7a1a26">H</text>
 
-          <!-- Side labels (bigger) -->
-          <text x="172" y="170" font-family="Cormorant Garamond, serif" font-style="italic" font-size="28" font-weight="700" fill="#14110f">b</text>
-          <text x="436" y="170" font-family="Cormorant Garamond, serif" font-style="italic" font-size="28" font-weight="700" fill="#14110f">a</text>
+          <!-- Side labels -->
+          <text id="svg-b-label" class="svg-el" x="172" y="170" font-family="Cormorant Garamond, serif" font-style="italic" font-size="28" font-weight="700" fill="#14110f">b</text>
+          <text id="svg-a-label" class="svg-el" x="436" y="170" font-family="Cormorant Garamond, serif" font-style="italic" font-size="28" font-weight="700" fill="#14110f">a</text>
 
           <!-- h_c label -->
-          <text x="372" y="190" font-family="Cormorant Garamond, serif" font-style="italic" font-size="24" font-weight="700" fill="#7a1a26">h</text>
-          <text x="389" y="197" font-family="Cormorant Garamond, serif" font-size="16" font-weight="700" fill="#7a1a26">c</text>
+          <g id="svg-h-label-grp" class="svg-el">
+            <text x="372" y="190" font-family="Cormorant Garamond, serif" font-style="italic" font-size="24" font-weight="700" fill="#7a1a26">h</text>
+            <text x="389" y="197" font-family="Cormorant Garamond, serif" font-size="16" font-weight="700" fill="#7a1a26">c</text>
+          </g>
 
-          <!-- Hypotenuse label c (above the AB line, inside triangle) -->
-          <text x="240" y="282" font-family="Cormorant Garamond, serif" font-style="italic" font-size="28" font-weight="700" fill="#14110f">c</text>
+          <!-- c label -->
+          <text id="svg-c-label" class="svg-el" x="240" y="282" font-family="Cormorant Garamond, serif" font-style="italic" font-size="28" font-weight="700" fill="#14110f">c</text>
 
-          <!-- Projection segments below triangle (with arrows) -->
-          <line x1="60" y1="338" x2="360" y2="338" stroke="#a87528" stroke-width="1.8" marker-start="url(#arrowGold)" marker-end="url(#arrowGold)"/>
-          <line x1="360" y1="338" x2="490" y2="338" stroke="#a87528" stroke-width="1.8" marker-start="url(#arrowGold)" marker-end="url(#arrowGold)"/>
+          <!-- Projection segments below triangle -->
+          <line id="svg-b1-line" class="svg-el" x1="60" y1="338" x2="360" y2="338" stroke="#a87528" stroke-width="1.8" marker-start="url(#arrowGold)" marker-end="url(#arrowGold)"/>
+          <line id="svg-a1-line" class="svg-el" x1="360" y1="338" x2="490" y2="338" stroke="#a87528" stroke-width="1.8" marker-start="url(#arrowGold)" marker-end="url(#arrowGold)"/>
 
-          <!-- b1 label below -->
-          <text x="195" y="362" font-family="Cormorant Garamond, serif" font-style="italic" font-size="22" font-weight="700" fill="#a87528">b</text>
-          <text x="211" y="368" font-family="Cormorant Garamond, serif" font-size="14" font-weight="700" fill="#a87528">1</text>
+          <!-- b1 label -->
+          <g id="svg-b1-label-grp" class="svg-el">
+            <text x="195" y="362" font-family="Cormorant Garamond, serif" font-style="italic" font-size="22" font-weight="700" fill="#a87528">b</text>
+            <text x="211" y="368" font-family="Cormorant Garamond, serif" font-size="14" font-weight="700" fill="#a87528">1</text>
+          </g>
 
-          <!-- a1 label below -->
-          <text x="412" y="362" font-family="Cormorant Garamond, serif" font-style="italic" font-size="22" font-weight="700" fill="#a87528">a</text>
-          <text x="427" y="368" font-family="Cormorant Garamond, serif" font-size="14" font-weight="700" fill="#a87528">1</text>
+          <!-- a1 label -->
+          <g id="svg-a1-label-grp" class="svg-el">
+            <text x="412" y="362" font-family="Cormorant Garamond, serif" font-style="italic" font-size="22" font-weight="700" fill="#a87528">a</text>
+            <text x="427" y="368" font-family="Cormorant Garamond, serif" font-size="14" font-weight="700" fill="#a87528">1</text>
+          </g>
 
-          <!-- Angles α at A, β at B - ИЗЧИСЛЕНИ ЗА ПЛЪТНО ДОКОСВАНЕ -->
+          <!-- Angles -->
           <path d="M 98,290 A 38,38 0 0,0 90.6,267.5" fill="none" stroke="#14110f" stroke-width="2"/>
           <text x="100" y="283" font-family="Cormorant Garamond, serif" font-style="italic" font-size="20" font-weight="700">α</text>
 
           <path d="M 448,290 A 42,42 0 0,1 468.6,253.8" fill="none" stroke="#14110f" stroke-width="2"/>
           <text x="432" y="280" font-family="Cormorant Garamond, serif" font-style="italic" font-size="20" font-weight="700">β</text>
+        </svg>
+
+        <!-- Coordinate-system diagram (alternate, hidden by default) -->
+        <svg class="coord-diagram" id="coordSvg" viewBox="0 0 540 380" xmlns="http://www.w3.org/2000/svg" style="display:none; width:100%; max-width:540px; margin:0 auto;">
+          <defs>
+            <marker id="arrowAxis" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+              <path d="M0,0 L10,5 L0,10 Z" fill="#14110f"/>
+            </marker>
+          </defs>
+          <!-- Grid lines -->
+          <g stroke="#e2dfcc" stroke-width="1">
+            <line x1="40" y1="50" x2="40" y2="340"/>
+            <line x1="100" y1="50" x2="100" y2="340"/>
+            <line x1="160" y1="50" x2="160" y2="340"/>
+            <line x1="220" y1="50" x2="220" y2="340"/>
+            <line x1="340" y1="50" x2="340" y2="340"/>
+            <line x1="400" y1="50" x2="400" y2="340"/>
+            <line x1="460" y1="50" x2="460" y2="340"/>
+            <line x1="500" y1="50" x2="500" y2="340"/>
+            <line x1="40" y1="80" x2="500" y2="80"/>
+            <line x1="40" y1="130" x2="500" y2="130"/>
+            <line x1="40" y1="180" x2="500" y2="180"/>
+            <line x1="40" y1="230" x2="500" y2="230"/>
+            <line x1="40" y1="280" x2="500" y2="280"/>
+            <line x1="40" y1="320" x2="500" y2="320"/>
+          </g>
+          <!-- Axes -->
+          <line x1="40" y1="220" x2="510" y2="220" stroke="#14110f" stroke-width="2" marker-end="url(#arrowAxis)"/>
+          <line x1="280" y1="350" x2="280" y2="40" stroke="#14110f" stroke-width="2" marker-end="url(#arrowAxis)"/>
+          <!-- Origin -->
+          <text x="266" y="237" font-family="Cormorant Garamond, serif" font-style="italic" font-size="16" font-weight="700">O</text>
+          <text x="515" y="225" font-family="Cormorant Garamond, serif" font-style="italic" font-size="18" font-weight="700">x</text>
+          <text x="284" y="38" font-family="Cormorant Garamond, serif" font-style="italic" font-size="18" font-weight="700">y</text>
+          <!-- Sample points (will be updated by JS) -->
+          <g id="coord-points">
+            <circle id="pt-A" cx="380" cy="120" r="6" fill="#7a1a26"/>
+            <text id="pt-A-label" x="392" y="115" font-family="Cormorant Garamond, serif" font-style="italic" font-size="20" font-weight="700" fill="#7a1a26">A</text>
+            <circle id="pt-B" cx="160" cy="280" r="6" fill="#14110f"/>
+            <text id="pt-B-label" x="138" y="298" font-family="Cormorant Garamond, serif" font-style="italic" font-size="20" font-weight="700" fill="#14110f">B</text>
+            <line id="pt-line" x1="160" y1="280" x2="380" y2="120" stroke="#14110f" stroke-width="2.5" stroke-dasharray="6,3"/>
+            <text id="coord-label-AB" x="250" y="190" font-family="Cormorant Garamond, serif" font-style="italic" font-size="20" font-weight="700" fill="#14110f">AB</text>
+          </g>
         </svg>
       </div>
 
@@ -781,114 +1201,230 @@
         </div>
 
         <div class="formula-section-title">▸ Метрични зависимости</div>
-        <div class="formula-list cols-2">
-          <span><b>1.</b> <em>a</em><sup>2</sup> = <em>c</em> · <em>a<sub>1</sub></em></span>
-          <span><b>2.</b> <em>b</em><sup>2</sup> = <em>c</em> · <em>b<sub>1</sub></em></span>
-          <span><b>3.</b> <em>h<sub>c</sub></em><sup>2</sup> = <em>a<sub>1</sub></em> · <em>b<sub>1</sub></em></span>
-          <span><b>4.</b> <em>a</em> · <em>b</em> = <em>c</em> · <em>h<sub>c</sub></em></span>
-          <span><b>5.</b> <em>a</em><sup>2</sup> + <em>b</em><sup>2</sup> = <em>c</em><sup>2</sup></span>
-          <span style="grid-column: 1 / -1;"><b>6.</b> <em>c</em> = <em>a<sub>1</sub></em> + <em>b<sub>1</sub></em></span>
+        <div class="formula-list cols-2" id="metricFormulas">
+          <span data-fid="1"><b>1.</b> <em>a</em><sup>2</sup> = <em>c</em> · <em>a<sub>1</sub></em></span>
+          <span data-fid="2"><b>2.</b> <em>b</em><sup>2</sup> = <em>c</em> · <em>b<sub>1</sub></em></span>
+          <span data-fid="3"><b>3.</b> <em>h<sub>c</sub></em><sup>2</sup> = <em>a<sub>1</sub></em> · <em>b<sub>1</sub></em></span>
+          <span data-fid="4"><b>4.</b> <em>a</em> · <em>b</em> = <em>c</em> · <em>h<sub>c</sub></em></span>
+          <span data-fid="5"><b>5.</b> <em>a</em><sup>2</sup> + <em>b</em><sup>2</sup> = <em>c</em><sup>2</sup></span>
+          <span data-fid="6"><b>6.</b> <em>c</em> = <em>a<sub>1</sub></em> + <em>b<sub>1</sub></em></span>
         </div>
 
         <div class="formula-section-title">▸ Лице, периметър, окръжности</div>
         <div class="formula-list cols-2">
-          <span><b>S</b> = <span class="frac"><span><em>a</em>·<em>b</em></span><span>2</span></span> = <span class="frac"><span><em>c</em>·<em>h<sub>c</sub></em></span><span>2</span></span></span>
-          <span><b>P</b> = <em>a</em> + <em>b</em> + <em>c</em></span>
-          <span><b>R</b> = <span class="frac"><span><em>c</em></span><span>2</span></span></span>
-          <span><b>r</b> = <span class="frac"><span><em>a</em> + <em>b</em> − <em>c</em></span><span>2</span></span></span>
+          <span data-fid="S"><b>S</b> = <span class="frac"><span><em>a</em>·<em>b</em></span><span>2</span></span> = <span class="frac"><span><em>c</em>·<em>h<sub>c</sub></em></span><span>2</span></span></span>
+          <span data-fid="P"><b>P</b> = <em>a</em> + <em>b</em> + <em>c</em></span>
+          <span data-fid="R"><b>R</b> = <span class="frac"><span><em>c</em></span><span>2</span></span></span>
+          <span data-fid="r"><b>r</b> = <span class="frac"><span><em>a</em> + <em>b</em> − <em>c</em></span><span>2</span></span></span>
         </div>
       </div>
     </section>
 
-    <!-- RIGHT: Task -->
+    <!-- ============================================================
+         RIGHT PANEL: Student / Teacher
+         ============================================================ -->
     <section class="panel">
-      <div class="panel-label">Задача · генератор</div>
 
-      <!-- Instructions Dropdown -->
-      <details class="instructions">
-        <summary>Указания за работа</summary>
-        <ul>
-          <li>Изберете тип задача от бутоните по-долу или оставете на <b>Случаен тип</b>.</li>
-          <li>Въведете търсените стойности в съответните полета. Използвайте <b>виртуалната клавиатура</b> за лесно въвеждане на корени (√) и дроби (/).</li>
-          <li>Натиснете <b>Провери</b> (или клавиш Enter), за да видите дали отговорите ви са правилни (✓ или ✗).</li>
-          <li>Ако се затруднявате, натиснете <b>Покажи решение</b> за стъпка по стъпка обяснение.</li>
-        </ul>
-      </details>
+      <!-- ============== STUDENT PANEL ============== -->
+      <div class="student-panel">
+        <div class="panel-label">Задача · генератор</div>
 
-      <div class="task-controls" id="typeControls">
-        <button class="chip active" data-type="any">Случаен тип</button>
-        <button class="chip" data-type="pyth">Питагор</button>
-        <button class="chip" data-type="catheti">Катети → c, h, проекции</button>
-        <button class="chip" data-type="proj">Проекции → катети, h</button>
-        <button class="chip" data-type="cathProj">Катет + проекция</button>
-        <button class="chip" data-type="hypProj">Хипотенуза + проекция</button>
-        <button class="chip" data-type="altitude">Височина + проекция</button>
-        <button class="chip" data-type="cathHyp">Катет + хипотенуза</button>
-        <button class="chip" data-type="cathAlt">Катет + h<sub>c</sub></button>
-        <button class="chip" data-type="hypAlt">Хипотенуза + h<sub>c</sub></button>
-        <button class="chip" data-type="area">С лице S</button>
-        <button class="chip" data-type="incircle">Вписана окр. r</button>
-        <button class="chip" data-type="coord">Координатна с-ма</button>
-      </div>
+        <details class="instructions">
+          <summary>Указания за работа</summary>
+          <ul>
+            <li>Изберете тип задача от групите по-долу или оставете на <b>Случаен тип</b>.</li>
+            <li>Чертежът се променя според задачата — <b>червеното</b> означава дадено, <b>зеленото</b> означава потвърдено решение.</li>
+            <li>Ако се затруднявате, използвайте <b>стъпаловидните подсказки</b>: 💡 насока → 📐 формула → 📖 пълно решение.</li>
+            <li>В режим <b>Серия от задачи</b> може да решите 5/7/10 задачи подред и да получите процент успеваемост.</li>
+            <li>Виртуалната клавиатура се отваря с бутона <b>⌨ Клавиатура</b> при нужда.</li>
+          </ul>
+        </details>
 
-      <div class="task-meta">
-        <span id="taskNum">Задача №1</span>
-        <span class="difficulty" id="diff">★ ☆ ☆</span>
-      </div>
-
-      <div class="task-title" id="taskTitle">Зареждане...</div>
-      <div class="task-text" id="taskText"></div>
-      <div class="given" id="givenBox"></div>
-      <div class="find" id="findBox"></div>
-
-      <!-- ANSWER FORM with virtual keyboard -->
-      <div class="answer-form">
-        <div class="answer-form-label">Въведи отговор/и</div>
-        <div id="answerInputs"></div>
-
-        <div class="vkbd">
-          <div class="vkbd-title">Виртуална клавиатура</div>
-          <div class="vkbd-keys" id="vkbd">
-            <button class="vkey" data-k="0">0</button>
-            <button class="vkey" data-k="1">1</button>
-            <button class="vkey" data-k="2">2</button>
-            <button class="vkey" data-k="3">3</button>
-            <button class="vkey" data-k="4">4</button>
-            <button class="vkey" data-k="5">5</button>
-            <button class="vkey" data-k="6">6</button>
-            <button class="vkey" data-k="7">7</button>
-            <button class="vkey" data-k="8">8</button>
-            <button class="vkey" data-k="9">9</button>
-            <button class="vkey" data-k=",">,</button>
-            <button class="vkey" data-k=".">.</button>
-            <button class="vkey special" data-k="√">√</button>
-            <button class="vkey special" data-k="/">/</button>
-            <button class="vkey" data-k="(">(</button>
-            <button class="vkey" data-k=")">)</button>
-            <button class="vkey" data-k="-">−</button>
-            <button class="vkey" data-k="·">·</button>
-            <button class="vkey wide" data-k="space">␣</button>
-            <button class="vkey wide special" data-k="back">⌫</button>
-            <button class="vkey wide special" data-k="clear">CLR</button>
+        <div class="type-groups">
+          <div class="random-row">
+            <button class="chip random-chip active" data-type="any">★ Случаен тип</button>
+          </div>
+          <div class="group">
+            <div class="group-label"><span class="stars">★</span> Основни</div>
+            <button class="chip" data-type="pyth">Питагор</button>
+            <button class="chip" data-type="catheti">Катети → c, h, a₁, b₁</button>
+            <button class="chip" data-type="area">Лице S</button>
+          </div>
+          <div class="group">
+            <div class="group-label"><span class="stars">★ ★</span> Метрични зависимости</div>
+            <button class="chip" data-type="proj">Проекции</button>
+            <button class="chip" data-type="cathProj">Катет + проекция</button>
+            <button class="chip" data-type="hypProj">Хипотенуза + проекция</button>
+            <button class="chip" data-type="cathHyp">Катет + хипотенуза</button>
+            <button class="chip" data-type="incircle">Вписана окр. r</button>
+          </div>
+          <div class="group">
+            <div class="group-label"><span class="stars">★ ★ ★</span> Разширени</div>
+            <button class="chip" data-type="altitude">Височина + проекция</button>
+            <button class="chip" data-type="cathAlt">Катет + h<sub>c</sub></button>
+            <button class="chip" data-type="hypAlt">Хипотенуза + h<sub>c</sub></button>
+            <button class="chip" data-type="coord">Координатна с-ма</button>
           </div>
         </div>
 
-        <div class="actions" style="margin-top: 12px; padding-top: 0; border: none;">
-          <button class="btn primary" id="checkBtn">Провери</button>
-          <button class="btn secondary" id="solBtn">Покажи решение</button>
-          <button class="btn secondary" id="newBtn">Нова задача</button>
+        <div class="series-bar">
+          <div class="series-info">
+            <span id="seriesLabel">Серия · <b id="seriesCur">1</b> от <b id="seriesTotal">5</b></span>
+          </div>
+          <div class="progress-dots" id="progressDots"></div>
+          <div class="series-controls">
+            <input type="number" min="1" max="20" value="5" class="series-len-input" id="seriesLen" title="Дължина на серията">
+            <button class="btn tertiary" id="resetSeriesBtn">Нова серия</button>
+          </div>
+        </div>
+
+        <div class="series-summary" id="seriesSummary">
+          <h3>Серията е завършена!</h3>
+          <div class="pct" id="seriesPct">0%</div>
+          <div class="stat" id="seriesStat">0 от 0 верни</div>
+        </div>
+
+        <div class="task-meta">
+          <span id="taskNum">Задача №1</span>
+          <span class="difficulty" id="diff">★ ☆ ☆</span>
+        </div>
+
+        <div class="task-title" id="taskTitle">Зареждане...</div>
+        <div class="task-text" id="taskText"></div>
+        <div class="given" id="givenBox"></div>
+        <div class="find" id="findBox"></div>
+
+        <div class="answer-form">
+          <div class="answer-form-label">Въведи отговор/и</div>
+          <div id="answerInputs"></div>
+
+          <div class="kbd-toggle-row">
+            <button class="kbd-toggle" id="kbdToggle">⌨ Клавиатура</button>
+          </div>
+
+          <div class="vkbd" id="vkbd">
+            <div class="vkbd-title">Виртуална клавиатура</div>
+            <div class="vkbd-keys">
+              <button class="vkey" data-k="0">0</button>
+              <button class="vkey" data-k="1">1</button>
+              <button class="vkey" data-k="2">2</button>
+              <button class="vkey" data-k="3">3</button>
+              <button class="vkey" data-k="4">4</button>
+              <button class="vkey" data-k="5">5</button>
+              <button class="vkey" data-k="6">6</button>
+              <button class="vkey" data-k="7">7</button>
+              <button class="vkey" data-k="8">8</button>
+              <button class="vkey" data-k="9">9</button>
+              <button class="vkey" data-k=",">,</button>
+              <button class="vkey" data-k=".">.</button>
+              <button class="vkey special" data-k="√">√</button>
+              <button class="vkey special" data-k="/">/</button>
+              <button class="vkey" data-k="(">(</button>
+              <button class="vkey" data-k=")">)</button>
+              <button class="vkey" data-k="-">−</button>
+              <button class="vkey" data-k="·">·</button>
+              <button class="vkey wide" data-k="space">␣</button>
+              <button class="vkey wide special" data-k="back">⌫</button>
+              <button class="vkey wide special" data-k="clear">CLR</button>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" id="checkBtn">Провери</button>
+            <button class="btn secondary" id="newBtn">Следваща задача →</button>
+          </div>
+
+          <div class="hint-row">
+            <button class="btn tertiary" id="hint1Btn">💡 Подсказка</button>
+            <button class="btn tertiary" id="hint2Btn">📐 Формула</button>
+            <button class="btn tertiary" id="solBtn">📖 Пълно решение</button>
+          </div>
+        </div>
+
+        <div class="hint-card" id="hint1Card">
+          <div class="hstep">Подсказка 1 / 3 · насока</div>
+          <div class="htext" id="hint1Text"></div>
+        </div>
+
+        <div class="hint-card" id="hint2Card">
+          <div class="hstep">Подсказка 2 / 3 · ключова формула</div>
+          <div class="htext" id="hint2Text"></div>
+        </div>
+
+        <div class="solution" id="solBox">
+          <div class="solution-title">Пълно решение</div>
+          <div id="solSteps"></div>
+          <div class="answer-final" id="ansBox"></div>
+        </div>
+
+        <div style="margin-top: 10px;" class="seed" id="seedTxt"></div>
+      </div>
+
+      <!-- ============== TEACHER PANEL ============== -->
+      <div class="teacher-panel">
+        <div class="panel-label">Учителски режим · тестов лист</div>
+
+        <details class="instructions" open>
+          <summary>Какво прави учителският режим?</summary>
+          <ul>
+            <li>Генерира <b>тестов лист</b> с произволен брой задачи (5-30) от избрани типове.</li>
+            <li>Може да включи отделен <b>лист с отговори</b> за учителя.</li>
+            <li>Натиснете <b>📄 Принт / Запази PDF</b> за изпращане към принтера или PDF.</li>
+            <li>Имената на учениците се записват ръчно върху отпечатания лист.</li>
+          </ul>
+        </details>
+
+        <div class="teacher-controls-row">
+          <div class="teacher-field">
+            <label>Заглавие</label>
+            <input type="text" id="testTitle" value="Контролна работа · Метрични зависимости" style="min-width:240px;">
+          </div>
+          <div class="teacher-field">
+            <label>Брой задачи</label>
+            <input type="number" id="testCount" value="10" min="3" max="30" style="width:80px;">
+          </div>
+          <div class="teacher-field">
+            <label>Ниво на трудност</label>
+            <select id="testLevel">
+              <option value="all">Всички (★ + ★★ + ★★★)</option>
+              <option value="basic">Само основни (★)</option>
+              <option value="medium">Основни + метрични (★ + ★★)</option>
+              <option value="advanced">Метрични + разширени (★★ + ★★★)</option>
+              <option value="hard">Само разширени (★★★)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="teacher-toggles">
+          <label class="toggle-line">
+            <input type="checkbox" id="includeAnswers" checked>
+            Включи лист с отговори
+          </label>
+          <label class="toggle-line">
+            <input type="checkbox" id="includeFullSolutions">
+            Пълни решения (за учителя)
+          </label>
+          <label class="toggle-line">
+            <input type="checkbox" id="includeNameLine" checked>
+            Поле за име на ученика
+          </label>
+          <label class="toggle-line">
+            <input type="checkbox" id="includeFigure" checked>
+            Малък чертеж във всяка задача
+          </label>
+        </div>
+
+        <div class="actions" style="border-top:none; padding-top:0;">
+          <button class="btn primary" id="generateTestBtn" onclick="generateTeacherTest()">Генерирай преглед</button>
+          <button class="btn secondary" id="printTestBtn" onclick="printTest()">📄 Принт / Запази PDF</button>
+        </div>
+
+        <div class="teacher-preview" id="teacherPreview">
+          <em style="color:#888;">Натиснете „Генерирай преглед" за да видите примерен лист.</em>
         </div>
       </div>
 
-      <div class="solution" id="solBox">
-        <div class="solution-title">Решение</div>
-        <div id="solSteps"></div>
-        <div class="answer-final" id="ansBox"></div>
-      </div>
-
-      <div style="margin-top: 10px;" class="seed" id="seedTxt"></div>
     </section>
-
   </div>
 
   <footer>
@@ -899,26 +1435,21 @@
 
 <script>
 // ============================================================
-//  RATIONAL + SQRT NUMBER REPRESENTATION
-//  Value form: { p, q, n }  meaning  (p/q) * sqrt(n)
-//  with q>0, n>=1, gcd(p,q)=1, n square-free
+// PART 1: NUMBER LIBRARY (rational + sqrt)
+// Value form: { p, q, n }  meaning  (p/q) * sqrt(n)
 // ============================================================
 
 function gcd(a, b) { a=Math.abs(a); b=Math.abs(b); while(b){[a,b]=[b,a%b];} return a||1; }
 
 function makeNum(p, q, n) {
-  // Reduce
   q = q || 1;
   n = n || 1;
-  // Extract square factors out of n
   let mult = 1;
   for (let i = 2; i*i <= n; i++) {
     while (n % (i*i) === 0) { n = n / (i*i); mult *= i; }
   }
   p = p * mult;
-  // Sign: keep q positive
   if (q < 0) { q = -q; p = -p; }
-  // Reduce p/q
   if (p === 0) return { p: 0, q: 1, n: 1 };
   const g = gcd(p, q);
   p = p / g;
@@ -927,36 +1458,28 @@ function makeNum(p, q, n) {
 }
 
 function num(value) {
-  // From integer
   if (typeof value === 'number') return makeNum(value, 1, 1);
   return makeNum(value.p, value.q, value.n);
 }
 
-// Build sqrt-number from integer under sqrt
 function fromSqrt(k) {
   if (k < 0) return null;
   return makeNum(1, 1, k);
 }
 
-// SVG textbook sqrt helper
 function sqr(inner) {
   return `<span class="sqrt"><span class="sqrt-sign">√</span><span class="sqrt-val">${inner}</span></span>`;
 }
 
-// Float value
 function toFloat(x) { return (x.p / x.q) * Math.sqrt(x.n); }
 
-// HTML render of number
 function renderNum(x) {
   const { p, q, n } = x;
   if (p === 0) return '0';
-  // Build numerator string
   let numStr;
   if (n === 1) {
-    // Pure rational
     numStr = String(Math.abs(p));
   } else {
-    // Has sqrt
     const absP = Math.abs(p);
     if (absP === 1) numStr = sqr(n);
     else numStr = `${absP}${sqr(n)}`;
@@ -966,7 +1489,6 @@ function renderNum(x) {
   return `${sign}<span class="frac"><span>${numStr}</span><span>${q}</span></span>`;
 }
 
-// Plain text render (for input matching)
 function renderNumPlain(x) {
   const { p, q, n } = x;
   if (p === 0) return '0';
@@ -980,71 +1502,39 @@ function renderNumPlain(x) {
   return `${sign}${numStr}/${q}`;
 }
 
-// Operations
 function nMul(a, b) {
-  // (p1/q1)*sqrt(n1) * (p2/q2)*sqrt(n2) = (p1*p2)/(q1*q2) * sqrt(n1*n2)
   return makeNum(a.p * b.p, a.q * b.q, a.n * b.n);
 }
-
 function nDiv(a, b) {
-  // a / b = (p1*q2)/(q1*p2) * sqrt(n1)/sqrt(n2)
-  // sqrt(n1)/sqrt(n2) = sqrt(n1*n2)/n2
   return makeNum(a.p * b.q * b.n, a.q * b.p * b.n, a.n * b.n);
 }
-
 function nAdd(a, b) {
-  // Only if same n
   if (a.n === b.n) {
-    // p1/q1 + p2/q2 = (p1*q2 + p2*q1)/(q1*q2)  * sqrt(n)
     return makeNum(a.p * b.q + b.p * a.q, a.q * b.q, a.n);
   }
-  // Mixed - return as float-based num if necessary
-  // For our generator we'll always design tasks so additions stay homogeneous
-  // Fallback: produce a num whose float matches via approximation (not used)
   const f = toFloat(a) + toFloat(b);
   return makeNum(Math.round(f * 1000), 1000, 1);
 }
-
 function nSub(a, b) {
   return nAdd(a, makeNum(-b.p, b.q, b.n));
 }
-
 function nSq(a) {
-  // a^2 = (p^2/q^2) * n
   return makeNum(a.p * a.p * a.n, a.q * a.q, 1);
 }
-
 function nSqrt(a) {
-  // sqrt(a) where a is a positive rational under sqrt
-  // a = (p/q)*sqrt(n). For our task design we'll only call sqrt on values where a.n=1
-  // sqrt(p/q) = sqrt(p*q)/q
   if (a.n !== 1) {
-    // sqrt((p/q)*sqrt(n)) — not used in our flows
     const f = Math.sqrt(toFloat(a));
     return makeNum(Math.round(f*1000), 1000, 1);
   }
-  // n=1, value = p/q
   if (a.p < 0) return null;
-  // sqrt(p/q) = sqrt(p*q)/q
   return makeNum(1, a.q, a.p * a.q);
 }
-
-// Equality up to rendering
 function nEq(a, b) {
   const A = makeNum(a.p, a.q, a.n);
   const B = makeNum(b.p, b.q, b.n);
   return A.p === B.p && A.q === B.q && A.n === B.n;
 }
 
-// Parse user input
-// Accepted forms:
-//   integer:  "12", "-3"
-//   decimal:  "2.5", "2,5"
-//   fraction: "3/4", "-3/4"
-//   sqrt:     "√3", "sqrt(3)"
-//   coeff*sqrt: "2√3", "2*√3"
-//   coeff*sqrt/q: "2√3/5", "(2√3)/5"
-//   sign:     "-2√3"
 function parseAnswer(s) {
   if (!s) return null;
   let t = s.trim().toLowerCase();
@@ -1057,13 +1547,10 @@ function parseAnswer(s) {
 
   if (t === '' || t === '0') return makeNum(0, 1, 1);
 
-  // Sign
   let sign = 1;
   if (t.startsWith('-')) { sign = -1; t = t.slice(1); }
   else if (t.startsWith('+')) { t = t.slice(1); }
 
-  // Pattern: [coeff][√n][/q]
-  // Split fraction
   let denom = 1;
   if (t.includes('/')) {
     const parts = t.split('/');
@@ -1074,7 +1561,6 @@ function parseAnswer(s) {
     denom = d;
   }
 
-  // Now t should be either "X" or "X√Y" or "√Y"
   let coeff = 1, root = 1;
   if (t.includes('√')) {
     const idx = t.indexOf('√');
@@ -1093,11 +1579,8 @@ function parseAnswer(s) {
     if (isNaN(coeff)) return null;
   }
 
-  // Convert coeff/denom to integer p,q if possible
-  // Multiply by 1000 if decimal
   function toRational(x) {
     if (Math.abs(x - Math.round(x)) < 1e-9) return [Math.round(x), 1];
-    // Try with 10, 100, 1000
     for (const m of [10, 100, 1000, 10000]) {
       const v = x * m;
       if (Math.abs(v - Math.round(v)) < 1e-6) {
@@ -1118,37 +1601,137 @@ function parseAnswer(s) {
 }
 
 // ============================================================
-// HELPERS
+// PART 2: TYPE METADATA + DIAGRAM/FORMULA HIGHLIGHTING
 // ============================================================
 
-const TYPES = ['pyth','catheti','proj','cathProj','hypProj','altitude','cathHyp','cathAlt','hypAlt','area','incircle','coord'];
-let currentType = 'any';
-let counter = 0;
-let currentTask = null;
+const TYPE_META = {
+  pyth:     { level: 1, group: 'basic',    formulas: [5], hint1: 'Двете дадени са катетите. Хипотенузата се намира с теоремата на Питагор — квадратът на хипотенузата е равен на сбора от квадратите на катетите.', hint2: '<em>c</em><sup>2</sup> = <em>a</em><sup>2</sup> + <em>b</em><sup>2</sup>' },
+  catheti:  { level: 2, group: 'basic',    formulas: [1,2,3,4,5], hint1: 'Дадени са катетите. Първо намерете хипотенузата по Питагор. После използвайте връзката между лицето в две форми, за да намерите височината. Проекциите се намират чрез <em>a</em><sup>2</sup> = <em>c</em>·<em>a</em><sub>1</sub>.', hint2: 'Питагор: <em>c</em><sup>2</sup>=<em>a</em><sup>2</sup>+<em>b</em><sup>2</sup>; Лице: <em>a</em>·<em>b</em>=<em>c</em>·<em>h<sub>c</sub></em>; Проекция: <em>a</em><sup>2</sup>=<em>c</em>·<em>a</em><sub>1</sub>.' },
+  proj:     { level: 2, group: 'medium',   formulas: [1,2,3,6], hint1: 'Дадени са двете проекции. Хипотенузата е тяхната сума. Височината е средно геометрично на проекциите. Катетите се намират чрез проекциите си.', hint2: '<em>c</em> = <em>a</em><sub>1</sub> + <em>b</em><sub>1</sub>; &nbsp; <em>h<sub>c</sub></em><sup>2</sup> = <em>a</em><sub>1</sub>·<em>b</em><sub>1</sub>; &nbsp; <em>a</em><sup>2</sup> = <em>c</em>·<em>a</em><sub>1</sub>.' },
+  cathProj: { level: 2, group: 'medium',   formulas: [1,2,3,6], hint1: 'Дадени са катет и неговата проекция. От връзката <em>a</em><sup>2</sup> = <em>c</em>·<em>a</em><sub>1</sub> намерете хипотенузата. Останалото следва.', hint2: '<em>c</em> = <em>a</em><sup>2</sup> / <em>a</em><sub>1</sub>; &nbsp; <em>b</em><sub>1</sub> = <em>c</em> − <em>a</em><sub>1</sub>; &nbsp; <em>b</em><sup>2</sup> = <em>c</em>·<em>b</em><sub>1</sub>.' },
+  hypProj:  { level: 2, group: 'medium',   formulas: [1,2,3,6], hint1: 'Дадени са хипотенузата и едната проекция. Другата проекция е разликата. После използвайте метричните зависимости за катетите и височината.', hint2: '<em>b</em><sub>1</sub> = <em>c</em> − <em>a</em><sub>1</sub>; &nbsp; <em>a</em><sup>2</sup> = <em>c</em>·<em>a</em><sub>1</sub>; &nbsp; <em>h<sub>c</sub></em><sup>2</sup> = <em>a</em><sub>1</sub>·<em>b</em><sub>1</sub>.' },
+  altitude: { level: 3, group: 'advanced', formulas: [1,2,3,6], hint1: 'Дадени са височината и едната проекция. От връзката <em>h<sub>c</sub></em><sup>2</sup> = <em>a</em><sub>1</sub>·<em>b</em><sub>1</sub> намерете другата проекция, после хипотенузата и катетите.', hint2: '<em>b</em><sub>1</sub> = <em>h<sub>c</sub></em><sup>2</sup> / <em>a</em><sub>1</sub>; &nbsp; <em>c</em> = <em>a</em><sub>1</sub> + <em>b</em><sub>1</sub>; &nbsp; <em>a</em><sup>2</sup> = <em>c</em>·<em>a</em><sub>1</sub>.' },
+  cathHyp:  { level: 2, group: 'medium',   formulas: [4,5], hint1: 'Дадени са катет и хипотенуза. Другият катет се намира по Питагор, а височината — от <em>a</em>·<em>b</em> = <em>c</em>·<em>h<sub>c</sub></em>.', hint2: 'По Питагор: липсващият катет; после <em>h<sub>c</sub></em> = <em>a</em>·<em>b</em>/<em>c</em>.' },
+  cathAlt:  { level: 3, group: 'advanced', formulas: [4,5,7,1,2], hint1: 'Дадени са катет и височината към хипотенузата. Тук помага формулата 1/<em>h<sub>c</sub></em><sup>2</sup> = 1/<em>a</em><sup>2</sup> + 1/<em>b</em><sup>2</sup>, която дава другия катет.', hint2: '1/<em>b</em><sup>2</sup> = 1/<em>h<sub>c</sub></em><sup>2</sup> − 1/<em>a</em><sup>2</sup>, после Питагор за <em>c</em>.' },
+  hypAlt:   { level: 3, group: 'advanced', formulas: [3,6], hint1: 'Дадени са хипотенузата и височината. Проекциите са корени на квадратно уравнение: <em>a</em><sub>1</sub>+<em>b</em><sub>1</sub> = <em>c</em>, <em>a</em><sub>1</sub>·<em>b</em><sub>1</sub> = <em>h<sub>c</sub></em><sup>2</sup>.', hint2: 'Виет: <em>x</em><sup>2</sup> − <em>c</em>·<em>x</em> + <em>h<sub>c</sub></em><sup>2</sup> = 0. Корените са проекциите.' },
+  area:     { level: 1, group: 'basic',    formulas: ['S'], hint1: 'Лицето на правоъгълен триъгълник може да се изчисли по два начина: половината от произведението на катетите ИЛИ половината от хипотенузата по височината към нея.', hint2: '<em>S</em> = <em>a</em>·<em>b</em>/2 = <em>c</em>·<em>h<sub>c</sub></em>/2' },
+  incircle: { level: 2, group: 'medium',   formulas: [5,'r','R'], hint1: 'За правоъгълен триъгълник радиусът на вписаната окръжност е (<em>a</em>+<em>b</em>−<em>c</em>)/2, а на описаната — половината от хипотенузата.', hint2: '<em>r</em> = (<em>a</em> + <em>b</em> − <em>c</em>)/2; &nbsp; <em>R</em> = <em>c</em>/2.' },
+  coord:    { level: 1, group: 'basic',    formulas: [], hint1: 'Разстоянието между две точки в координатна система се намира с обобщена теорема на Питагор: квадрат на разликата по x плюс квадрат на разликата по y, после корен.', hint2: '|AB| = √[(x<sub>A</sub>−x<sub>B</sub>)<sup>2</sup> + (y<sub>A</sub>−y<sub>B</sub>)<sup>2</sup>]', isCoord: true }
+};
 
-const $ = id => document.getElementById(id);
-function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-function rnd(lo, hi) { return Math.floor(Math.random() * (hi - lo + 1)) + lo; }
-function frac(n, d) { return `<span class="frac"><span>${n}</span><span>${d}</span></span>`; }
-
-// Pythagorean triples (primitive + scaled)
+const ALL_TYPES = Object.keys(TYPE_META);
 const PYTH_TRIPLES = [
   [3,4,5], [5,12,13], [8,15,17], [7,24,25], [20,21,29],
   [6,8,10], [9,12,15], [12,16,20], [15,20,25], [10,24,26],
   [18,24,30], [16,30,34], [9,40,41]
 ];
 
+// SVG element groups by name (for highlighting)
+const SVG_GROUPS = {
+  a:  ['svg-a-line', 'svg-a-label'],
+  b:  ['svg-b-line', 'svg-b-label'],
+  c:  ['svg-c-line', 'svg-c-label'],
+  h:  ['svg-h', 'svg-h-label-grp'],
+  a1: ['svg-a1-line', 'svg-a1-label-grp'],
+  b1: ['svg-b1-line', 'svg-b1-label-grp']
+};
+const ALL_SVG_KEYS = Object.keys(SVG_GROUPS);
+
+function clearSvgHighlights() {
+  ALL_SVG_KEYS.forEach(key => {
+    SVG_GROUPS[key].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.remove('svg-given', 'svg-given-text', 'svg-found', 'svg-found-text', 'svg-dim');
+    });
+  });
+}
+
+function highlightSvg(givenKeys, foundKeys) {
+  clearSvgHighlights();
+  const usedKeys = new Set([...givenKeys, ...foundKeys]);
+
+  givenKeys.forEach(key => {
+    const ids = SVG_GROUPS[key];
+    if (!ids) return;
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.tagName === 'text' || el.tagName === 'g') {
+        el.classList.add('svg-given-text');
+      } else {
+        el.classList.add('svg-given');
+      }
+    });
+  });
+
+  foundKeys.forEach(key => {
+    const ids = SVG_GROUPS[key];
+    if (!ids) return;
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.tagName === 'text' || el.tagName === 'g') {
+        el.classList.add('svg-found-text');
+      } else {
+        el.classList.add('svg-found');
+      }
+    });
+  });
+
+  ALL_SVG_KEYS.forEach(key => {
+    if (!usedKeys.has(key)) {
+      SVG_GROUPS[key].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('svg-dim');
+      });
+    }
+  });
+}
+
+function clearFormulaHighlights() {
+  document.querySelectorAll('.formula-list span[data-fid]').forEach(el => {
+    el.classList.remove('formula-highlight');
+  });
+}
+
+function highlightFormulas(fids) {
+  clearFormulaHighlights();
+  if (!fids) return;
+  fids.forEach(fid => {
+    const el = document.querySelector(`.formula-list span[data-fid="${fid}"]`);
+    if (el) el.classList.add('formula-highlight');
+  });
+}
+
+function setDiagramMode(isCoord) {
+  const triSvg = document.getElementById('triSvg');
+  const coordSvg = document.getElementById('coordSvg');
+  if (isCoord) {
+    triSvg.style.display = 'none';
+    coordSvg.style.display = 'block';
+  } else {
+    triSvg.style.display = 'block';
+    coordSvg.style.display = 'none';
+  }
+}
+
 // ============================================================
-// TASK BUILDERS
-// Each returns: { title, text, given, find, answers: [{label, expected}], steps, finalAnswer, diff }
+// PART 3: TASK BUILDERS
+// Each returns: { type, title, text, given, find, answers, steps, finalAnswer, diff,
+//                 givenKeys, foundKeys (for diagram highlight) }
 // ============================================================
 
-// ---------- Type: PYTHAGORAS ----------
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function rnd(lo, hi) { return Math.floor(Math.random() * (hi - lo + 1)) + lo; }
+function frac(n, d) { return `<span class="frac"><span>${n}</span><span>${d}</span></span>`; }
+
 function makePyth() {
   const variant = pick(['ab→c', 'ac→b', 'bc→a']);
   if (variant === 'ab→c') {
     const [a, b, c] = pick(PYTH_TRIPLES);
     return {
+      type: 'pyth',
       title: 'Питагорова теорема',
       text: `В правоъгълен триъгълник <span class="m">ABC</span> с прав ъгъл при <span class="m">C</span> са дадени катетите <span class="m">a</span> = ${a} и <span class="m">b</span> = ${b}.`,
       given: `<b>Дадено:</b> ∠C = 90°, &nbsp; a = ${a}, &nbsp; b = ${b}`,
@@ -1159,52 +1742,56 @@ function makePyth() {
         `Следователно c = ${sqr(a*a+b*b)} = ${c}.`
       ],
       finalAnswer: `c = ${c}`,
-      diff: '★ ☆ ☆'
+      diff: '★ ☆ ☆',
+      givenKeys: ['a', 'b'],
+      foundKeys: ['c']
     };
   }
-  if (variant === 'ac→b' || variant === 'bc→a') {
+  if (variant === 'ac→b') {
     const [a, b, c] = pick(PYTH_TRIPLES);
-    if (variant === 'ac→b') {
-      return {
-        title: 'Питагорова теорема',
-        text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катет <span class="m">a</span> = ${a} и хипотенуза <span class="m">c</span> = ${c}.`,
-        given: `<b>Дадено:</b> ∠C = 90°, &nbsp; a = ${a}, &nbsp; c = ${c}`,
-        find: 'Намерете другия катет <span class="m">b</span>.',
-        answers: [{label: 'b', expected: num(b)}],
-        steps: [
-          `От a<sup>2</sup> + b<sup>2</sup> = c<sup>2</sup>: b<sup>2</sup> = c<sup>2</sup> − a<sup>2</sup> = ${c*c} − ${a*a} = ${b*b}.`,
-          `b = ${sqr(b*b)} = ${b}.`
-        ],
-        finalAnswer: `b = ${b}`,
-        diff: '★ ☆ ☆'
-      };
-    }
     return {
+      type: 'pyth',
       title: 'Питагорова теорема',
-      text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катет <span class="m">b</span> = ${b} и хипотенуза <span class="m">c</span> = ${c}.`,
-      given: `<b>Дадено:</b> ∠C = 90°, &nbsp; b = ${b}, &nbsp; c = ${c}`,
-      find: 'Намерете другия катет <span class="m">a</span>.',
-      answers: [{label: 'a', expected: num(a)}],
+      text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катет <span class="m">a</span> = ${a} и хипотенуза <span class="m">c</span> = ${c}.`,
+      given: `<b>Дадено:</b> ∠C = 90°, &nbsp; a = ${a}, &nbsp; c = ${c}`,
+      find: 'Намерете другия катет <span class="m">b</span>.',
+      answers: [{label: 'b', expected: num(b)}],
       steps: [
-        `От a<sup>2</sup> + b<sup>2</sup> = c<sup>2</sup>: a<sup>2</sup> = c<sup>2</sup> − b<sup>2</sup> = ${c*c} − ${b*b} = ${a*a}.`,
-        `a = ${sqr(a*a)} = ${a}.`
+        `От a<sup>2</sup> + b<sup>2</sup> = c<sup>2</sup>: b<sup>2</sup> = c<sup>2</sup> − a<sup>2</sup> = ${c*c} − ${a*a} = ${b*b}.`,
+        `b = ${sqr(b*b)} = ${b}.`
       ],
-      finalAnswer: `a = ${a}`,
-      diff: '★ ☆ ☆'
+      finalAnswer: `b = ${b}`,
+      diff: '★ ☆ ☆',
+      givenKeys: ['a', 'c'],
+      foundKeys: ['b']
     };
   }
+  const [a, b, c] = pick(PYTH_TRIPLES);
+  return {
+    type: 'pyth',
+    title: 'Питагорова теорема',
+    text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катет <span class="m">b</span> = ${b} и хипотенуза <span class="m">c</span> = ${c}.`,
+    given: `<b>Дадено:</b> ∠C = 90°, &nbsp; b = ${b}, &nbsp; c = ${c}`,
+    find: 'Намерете другия катет <span class="m">a</span>.',
+    answers: [{label: 'a', expected: num(a)}],
+    steps: [
+      `От a<sup>2</sup> + b<sup>2</sup> = c<sup>2</sup>: a<sup>2</sup> = c<sup>2</sup> − b<sup>2</sup> = ${c*c} − ${b*b} = ${a*a}.`,
+      `a = ${sqr(a*a)} = ${a}.`
+    ],
+    finalAnswer: `a = ${a}`,
+    diff: '★ ☆ ☆',
+    givenKeys: ['b', 'c'],
+    foundKeys: ['a']
+  };
 }
 
-// ---------- Type: CATHETI → c, h, projections ----------
 function makeCatheti() {
   const [a, b, c] = pick(PYTH_TRIPLES);
-  const h = num((a*b)/c); // not always integer; rebuild via num
-  // h = a*b/c -- as rational
   const hN = makeNum(a*b, c, 1);
   const a1N = makeNum(a*a, c, 1);
   const b1N = makeNum(b*b, c, 1);
-
   return {
+    type: 'catheti',
     title: 'Дадени катети',
     text: `В правоъгълен триъгълник <span class="m">ABC</span> с прав ъгъл при <span class="m">C</span> са дадени катетите <span class="m">a</span> = ${a} и <span class="m">b</span> = ${b}.`,
     given: `<b>Дадено:</b> ∠C = 90°, &nbsp; a = ${a}, &nbsp; b = ${b}, &nbsp; CH ⊥ AB`,
@@ -1222,30 +1809,24 @@ function makeCatheti() {
       `От b<sup>2</sup> = c·b<sub>1</sub>: b<sub>1</sub> = ${frac('b<sup>2</sup>', 'c')} = ${frac(b*b, c)} = ${renderNum(b1N)}.`
     ],
     finalAnswer: `c = ${c}, &nbsp; h<sub>c</sub> = ${renderNum(hN)}, &nbsp; a<sub>1</sub> = ${renderNum(a1N)}, &nbsp; b<sub>1</sub> = ${renderNum(b1N)}`,
-    diff: '★ ★ ☆'
+    diff: '★ ★ ☆',
+    givenKeys: ['a', 'b'],
+    foundKeys: ['c', 'h', 'a1', 'b1']
   };
 }
 
-// ---------- Type: PROJECTIONS → a, b, h, c ----------
 function makeProj() {
-  // Use integer projections (a1, b1) so that c = a1+b1
   const setups = [
-    {a1: 9, b1: 16},   // c=25, h=12, a=15, b=20
-    {a1: 16, b1: 9},
-    {a1: 4, b1: 9},    // c=13, h=6
-    {a1: 1, b1: 4},    // c=5, h=2
-    {a1: 2, b1: 8},    // c=10, h=4
-    {a1: 18, b1: 32},  // c=50, h=24, a=30, b=40
-    {a1: 3, b1: 12},
-    {a1: 5, b1: 20}
+    {a1: 9, b1: 16}, {a1: 16, b1: 9}, {a1: 4, b1: 9}, {a1: 1, b1: 4},
+    {a1: 2, b1: 8}, {a1: 18, b1: 32}, {a1: 3, b1: 12}, {a1: 5, b1: 20}
   ];
   const {a1, b1} = pick(setups);
   const c = a1 + b1;
   const hN = nSqrt(num(a1 * b1));
   const aN = nSqrt(num(c * a1));
   const bN = nSqrt(num(c * b1));
-
   return {
+    type: 'proj',
     title: 'Дадени проекции',
     text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) височината <span class="m">CH</span> към хипотенузата отделя проекции <span class="m">a<sub>1</sub></span> = ${a1} и <span class="m">b<sub>1</sub></span> = ${b1}.`,
     given: `<b>Дадено:</b> ∠C = 90°, &nbsp; a<sub>1</sub> = ${a1}, &nbsp; b<sub>1</sub> = ${b1}`,
@@ -1263,20 +1844,16 @@ function makeProj() {
       `b<sup>2</sup> = c·b<sub>1</sub> = ${c*b1}, b = ${sqr(c*b1)} = ${renderNum(bN)}.`
     ],
     finalAnswer: `c = ${c}, &nbsp; h<sub>c</sub> = ${renderNum(hN)}, &nbsp; a = ${renderNum(aN)}, &nbsp; b = ${renderNum(bN)}`,
-    diff: '★ ★ ☆'
+    diff: '★ ★ ☆',
+    givenKeys: ['a1', 'b1'],
+    foundKeys: ['c', 'h', 'a', 'b']
   };
 }
 
-// ---------- Type: CATHETUS + ITS PROJECTION ----------
 function makeCathProj() {
   const setups = [
-    {a: 15, a1: 9},  // c=25, b1=16, b=20, h=12
-    {a: 20, a1: 16}, // c=25
-    {a: 12, a1: 9},  // c=16
-    {a: 6, a1: 4},   // c=9
-    {a: 10, a1: 8},  // c=12.5
-    {a: 8, a1: 4},   // c=16
-    {a: 30, a1: 18}  // c=50
+    {a: 15, a1: 9}, {a: 20, a1: 16}, {a: 12, a1: 9}, {a: 6, a1: 4},
+    {a: 8, a1: 4}, {a: 30, a1: 18}
   ];
   const {a, a1} = pick(setups);
   const cN = makeNum(a*a, a1, 1);
@@ -1284,8 +1861,8 @@ function makeCathProj() {
   const b1N = makeNum(a*a - a1*a1, a1, 1);
   const hN = nSqrt(nMul(num(a1), b1N));
   const bN = nSqrt(nMul(cN, b1N));
-
   return {
+    type: 'cathProj',
     title: 'Катет и неговата проекция',
     text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катет <span class="m">a</span> = ${a} и неговата проекция върху хипотенузата <span class="m">a<sub>1</sub></span> = ${a1}.`,
     given: `<b>Дадено:</b> ∠C = 90°, &nbsp; a = ${a}, &nbsp; a<sub>1</sub> = ${a1}`,
@@ -1303,28 +1880,24 @@ function makeCathProj() {
       `h<sub>c</sub><sup>2</sup> = a<sub>1</sub>·b<sub>1</sub>, h<sub>c</sub> = ${renderNum(hN)}.`
     ],
     finalAnswer: `c = ${renderNum(cN)}, &nbsp; b<sub>1</sub> = ${renderNum(b1N)}, &nbsp; b = ${renderNum(bN)}, &nbsp; h<sub>c</sub> = ${renderNum(hN)}`,
-    diff: '★ ★ ☆'
+    diff: '★ ★ ☆',
+    givenKeys: ['a', 'a1'],
+    foundKeys: ['c', 'b1', 'b', 'h']
   };
 }
 
-// ---------- Type: HYPOTENUSE + PROJECTION ----------
 function makeHypProj() {
   const setups = [
-    {c: 25, a1: 9},
-    {c: 25, a1: 16},
-    {c: 13, a1: 4},
-    {c: 13, a1: 9},
-    {c: 10, a1: 2},
-    {c: 50, a1: 18},
-    {c: 17, a1: 8}
+    {c: 25, a1: 9}, {c: 25, a1: 16}, {c: 13, a1: 4}, {c: 13, a1: 9},
+    {c: 10, a1: 2}, {c: 50, a1: 18}, {c: 17, a1: 8}
   ];
   const {c, a1} = pick(setups);
   const b1 = c - a1;
   const aN = nSqrt(num(c*a1));
   const bN = nSqrt(num(c*b1));
   const hN = nSqrt(num(a1*b1));
-
   return {
+    type: 'hypProj',
     title: 'Хипотенуза и проекция',
     text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) хипотенузата е <span class="m">c</span> = ${c}, а проекцията на катета <span class="m">a</span> е <span class="m">a<sub>1</sub></span> = ${a1}.`,
     given: `<b>Дадено:</b> ∠C = 90°, &nbsp; c = ${c}, &nbsp; a<sub>1</sub> = ${a1}`,
@@ -1342,28 +1915,24 @@ function makeHypProj() {
       `h<sub>c</sub><sup>2</sup> = a<sub>1</sub>·b<sub>1</sub> = ${a1*b1}, h<sub>c</sub> = ${renderNum(hN)}.`
     ],
     finalAnswer: `b<sub>1</sub> = ${b1}, &nbsp; a = ${renderNum(aN)}, &nbsp; b = ${renderNum(bN)}, &nbsp; h<sub>c</sub> = ${renderNum(hN)}`,
-    diff: '★ ★ ☆'
+    diff: '★ ★ ☆',
+    givenKeys: ['c', 'a1'],
+    foundKeys: ['b1', 'a', 'b', 'h']
   };
 }
 
-// ---------- Type: ALTITUDE + PROJECTION ----------
 function makeAltitude() {
   const setups = [
-    {h: 6, a1: 4},    // b1=9
-    {h: 12, a1: 9},
-    {h: 12, a1: 16},
-    {h: 4, a1: 2},
-    {h: 8, a1: 4},
-    {h: 6, a1: 3},
-    {h: 24, a1: 18}
+    {h: 6, a1: 4}, {h: 12, a1: 9}, {h: 12, a1: 16}, {h: 4, a1: 2},
+    {h: 8, a1: 4}, {h: 6, a1: 3}, {h: 24, a1: 18}
   ];
   const {h, a1} = pick(setups);
   const b1N = makeNum(h*h, a1, 1);
   const cN = nAdd(num(a1), b1N);
   const aN = nSqrt(nMul(cN, num(a1)));
   const bN = nSqrt(nMul(cN, b1N));
-
   return {
+    type: 'altitude',
     title: 'Височина и проекция',
     text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) височината към хипотенузата е <span class="m">h<sub>c</sub></span> = ${h}, а едната проекция е <span class="m">a<sub>1</sub></span> = ${a1}.`,
     given: `<b>Дадено:</b> ∠C = 90°, &nbsp; h<sub>c</sub> = ${h}, &nbsp; a<sub>1</sub> = ${a1}`,
@@ -1381,19 +1950,18 @@ function makeAltitude() {
       `b<sup>2</sup> = c·b<sub>1</sub>, b = ${renderNum(bN)}.`
     ],
     finalAnswer: `b<sub>1</sub> = ${renderNum(b1N)}, &nbsp; c = ${renderNum(cN)}, &nbsp; a = ${renderNum(aN)}, &nbsp; b = ${renderNum(bN)}`,
-    diff: '★ ★ ★'
+    diff: '★ ★ ★',
+    givenKeys: ['h', 'a1'],
+    foundKeys: ['b1', 'c', 'a', 'b']
   };
 }
 
-// ---------- Type: CATHETUS + HYPOTENUSE ----------
 function makeCathHyp() {
   const [a, b, c] = pick(PYTH_TRIPLES);
   const which = pick(['a', 'b']);
   if (which === 'a') {
-    const a1N = makeNum(a*a, c, 1);
-    const b1N = nSub(num(c), a1N);
-    const hN = nSqrt(nMul(a1N, b1N));
     return {
+      type: 'cathHyp',
       title: 'Катет и хипотенуза',
       text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катет <span class="m">a</span> = ${a} и хипотенуза <span class="m">c</span> = ${c}.`,
       given: `<b>Дадено:</b> ∠C = 90°, &nbsp; a = ${a}, &nbsp; c = ${c}`,
@@ -1407,37 +1975,33 @@ function makeCathHyp() {
         `От a·b = c·h<sub>c</sub>: h<sub>c</sub> = ${frac('a·b', 'c')} = ${frac(`${a}·${b}`, c)} = ${renderNum(makeNum(a*b, c, 1))}.`
       ],
       finalAnswer: `b = ${b}, &nbsp; h<sub>c</sub> = ${renderNum(makeNum(a*b, c, 1))}`,
-      diff: '★ ★ ☆'
-    };
-  } else {
-    return {
-      title: 'Катет и хипотенуза',
-      text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катет <span class="m">b</span> = ${b} и хипотенуза <span class="m">c</span> = ${c}.`,
-      given: `<b>Дадено:</b> ∠C = 90°, &nbsp; b = ${b}, &nbsp; c = ${c}`,
-      find: 'Намерете катета <span class="m">a</span> и височината <span class="m">h<sub>c</sub></span>.',
-      answers: [
-        {label: 'a', expected: num(a)},
-        {label: 'h<sub>c</sub>', expected: makeNum(a*b, c, 1)}
-      ],
-      steps: [
-        `По Питагор: a<sup>2</sup> = c<sup>2</sup> − b<sup>2</sup> = ${c*c} − ${b*b} = ${a*a}, a = ${a}.`,
-        `От a·b = c·h<sub>c</sub>: h<sub>c</sub> = ${frac('a·b', 'c')} = ${frac(`${a}·${b}`, c)} = ${renderNum(makeNum(a*b, c, 1))}.`
-      ],
-      finalAnswer: `a = ${a}, &nbsp; h<sub>c</sub> = ${renderNum(makeNum(a*b, c, 1))}`,
-      diff: '★ ★ ☆'
+      diff: '★ ★ ☆',
+      givenKeys: ['a', 'c'],
+      foundKeys: ['b', 'h']
     };
   }
+  return {
+    type: 'cathHyp',
+    title: 'Катет и хипотенуза',
+    text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катет <span class="m">b</span> = ${b} и хипотенуза <span class="m">c</span> = ${c}.`,
+    given: `<b>Дадено:</b> ∠C = 90°, &nbsp; b = ${b}, &nbsp; c = ${c}`,
+    find: 'Намерете катета <span class="m">a</span> и височината <span class="m">h<sub>c</sub></span>.',
+    answers: [
+      {label: 'a', expected: num(a)},
+      {label: 'h<sub>c</sub>', expected: makeNum(a*b, c, 1)}
+    ],
+    steps: [
+      `По Питагор: a<sup>2</sup> = c<sup>2</sup> − b<sup>2</sup> = ${c*c} − ${b*b} = ${a*a}, a = ${a}.`,
+      `От a·b = c·h<sub>c</sub>: h<sub>c</sub> = ${frac('a·b', 'c')} = ${frac(`${a}·${b}`, c)} = ${renderNum(makeNum(a*b, c, 1))}.`
+    ],
+    finalAnswer: `a = ${a}, &nbsp; h<sub>c</sub> = ${renderNum(makeNum(a*b, c, 1))}`,
+    diff: '★ ★ ☆',
+    givenKeys: ['b', 'c'],
+    foundKeys: ['a', 'h']
+  };
 }
 
-// ---------- Type: CATHETUS + ALTITUDE ----------
 function makeCathAlt() {
-  // Choose pythagorean triple, give a and h_c, find c, b, projections
-  const [a, b, c] = pick(PYTH_TRIPLES);
-  const hN = makeNum(a*b, c, 1);
-  // Display as h_c value; use either integer-h cases when possible
-  // We give: a and h_c, find c (= a*b/h, but tricky).
-  // Use formula: 1/h^2 = 1/a^2 + 1/b^2 → b^2 = (a^2 h^2)/(a^2 - h^2)
-  // Pick scenarios where h is small integer
   const goodCases = [
     {a:15, b:20, c:25}, {a:20, b:15, c:25},
     {a:10, b:24, c:26}, {a:24, b:10, c:26},
@@ -1448,8 +2012,8 @@ function makeCathAlt() {
   const hc = makeNum(t.a*t.b, t.c, 1);
   const a1N = makeNum(t.a*t.a, t.c, 1);
   const b1N = makeNum(t.b*t.b, t.c, 1);
-
   return {
+    type: 'cathAlt',
     title: 'Катет и височина',
     text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катет <span class="m">a</span> = ${t.a} и височината <span class="m">h<sub>c</sub></span> = ${renderNum(hc)}.`,
     given: `<b>Дадено:</b> ∠C = 90°, &nbsp; a = ${t.a}, &nbsp; h<sub>c</sub> = ${renderNum(hc)}`,
@@ -1461,31 +2025,31 @@ function makeCathAlt() {
       {label: 'b<sub>1</sub>', expected: b1N}
     ],
     steps: [
-      `В правоъгълния △BHC (∠AHC = 90°) по Питагор: a<sub>1</sub><sup>2</sup> = a<sup>2</sup> − h<sub>c</sub><sup>2</sup>. Така a<sub>1</sub> = ${sqr(`a<sup>2</sup> − h<sub>c</sub><sup>2</sup>`)} = ${renderNum(a1N)}.`,
-      `От h<sub>c</sub><sup>2</sup> = a<sub>1</sub>·b<sub>1</sub> намираме b<sub>1</sub> = ${frac('h<sub>c</sub><sup>2</sup>', 'a<sub>1</sub>')} = ${renderNum(b1N)}.`,
-      `Хипотенузата е c = a<sub>1</sub> + b<sub>1</sub> = ${renderNum(a1N)} + ${renderNum(b1N)} = ${t.c}.`,
-      `От b<sup>2</sup> = c·b<sub>1</sub> намираме катета b = ${sqr('c·b<sub>1</sub>')} = ${t.b}.`
+      `От ${frac(1, 'h<sub>c</sub><sup>2</sup>')} = ${frac(1, 'a<sup>2</sup>')} + ${frac(1, 'b<sup>2</sup>')}: ${frac(1, 'b<sup>2</sup>')} = ${frac(1, 'h<sub>c</sub><sup>2</sup>')} − ${frac(1, 'a<sup>2</sup>')}.`,
+      `b<sup>2</sup> = ${frac('a<sup>2</sup>·h<sub>c</sub><sup>2</sup>', 'a<sup>2</sup> − h<sub>c</sub><sup>2</sup>')} ⇒ b = ${t.b}.`,
+      `По Питагор: c = ${sqr('a<sup>2</sup>+b<sup>2</sup>')} = ${sqr(`${t.a*t.a}+${t.b*t.b}`)} = ${t.c}.`,
+      `a<sub>1</sub> = ${frac('a<sup>2</sup>', 'c')} = ${renderNum(a1N)}, &nbsp; b<sub>1</sub> = ${frac('b<sup>2</sup>', 'c')} = ${renderNum(b1N)}.`
     ],
     finalAnswer: `b = ${t.b}, &nbsp; c = ${t.c}, &nbsp; a<sub>1</sub> = ${renderNum(a1N)}, &nbsp; b<sub>1</sub> = ${renderNum(b1N)}`,
-    diff: '★ ★ ★'
+    diff: '★ ★ ★',
+    givenKeys: ['a', 'h'],
+    foundKeys: ['b', 'c', 'a1', 'b1']
   };
 }
 
-// ---------- Type: HYPOTENUSE + ALTITUDE ----------
 function makeHypAlt() {
   const cases = [
-    {c:8, h:makeNum(2,1,3), info:'(8, 2√3)'}, // a1*b1 = 12, a1+b1=8 → a1=2, b1=6
     {c:13, a1:4, b1:9, h:6},
     {c:25, a1:9, b1:16, h:12},
     {c:10, a1:2, b1:8, h:4},
     {c:5, a1:1, b1:4, h:2}
   ];
-  const useCase = pick(cases.slice(1)); // skip the irrational h case for first iter
+  const useCase = pick(cases);
   const {c, a1, b1, h} = useCase;
   const aN = nSqrt(num(c*a1));
   const bN = nSqrt(num(c*b1));
-
   return {
+    type: 'hypAlt',
     title: 'Хипотенуза и височина',
     text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) хипотенузата е <span class="m">c</span> = ${c}, а височината към нея е <span class="m">h<sub>c</sub></span> = ${h}.`,
     given: `<b>Дадено:</b> ∠C = 90°, &nbsp; c = ${c}, &nbsp; h<sub>c</sub> = ${h}`,
@@ -1503,17 +2067,18 @@ function makeHypAlt() {
       `b<sup>2</sup> = c·b<sub>1</sub> = ${c*b1}, b = ${renderNum(bN)}.`
     ],
     finalAnswer: `a<sub>1</sub> = ${a1}, &nbsp; b<sub>1</sub> = ${b1}, &nbsp; a = ${renderNum(aN)}, &nbsp; b = ${renderNum(bN)}`,
-    diff: '★ ★ ★'
+    diff: '★ ★ ★',
+    givenKeys: ['c', 'h'],
+    foundKeys: ['a1', 'b1', 'a', 'b']
   };
 }
 
-// ---------- Type: AREA ----------
 function makeArea() {
-  // Given some elements, find S
   const variant = pick(['ab', 'ch', 'cathProj', 'hypAlt']);
   if (variant === 'ab') {
     const [a, b, c] = pick(PYTH_TRIPLES);
     return {
+      type: 'area',
       title: 'Лице на триъгълник',
       text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катетите <span class="m">a</span> = ${a} и <span class="m">b</span> = ${b}.`,
       given: `<b>Дадено:</b> ∠C = 90°, a = ${a}, b = ${b}`,
@@ -1527,12 +2092,16 @@ function makeArea() {
         `c = ${sqr('a<sup>2</sup>+b<sup>2</sup>')} = ${c}.`
       ],
       finalAnswer: `S = ${(a*b)/2}, &nbsp; c = ${c}`,
-      diff: '★ ☆ ☆'
+      diff: '★ ☆ ☆',
+      givenKeys: ['a', 'b'],
+      foundKeys: ['c']
     };
-  } else if (variant === 'ch') {
+  }
+  if (variant === 'ch') {
     const [a, b, c] = pick(PYTH_TRIPLES);
     const hN = makeNum(a*b, c, 1);
     return {
+      type: 'area',
       title: 'Лице чрез хипотенуза и височина',
       text: `Хипотенузата на правоъгълен триъгълник е <span class="m">c</span> = ${c}, а височината към нея е <span class="m">h<sub>c</sub></span> = ${renderNum(hN)}.`,
       given: `<b>Дадено:</b> c = ${c}, h<sub>c</sub> = ${renderNum(hN)}`,
@@ -1544,18 +2113,21 @@ function makeArea() {
         `S = ${frac('c·h<sub>c</sub>', 2)} = ${frac(`${c}·${renderNum(hN)}`, 2)} = ${(a*b)/2}.`
       ],
       finalAnswer: `S = ${(a*b)/2}`,
-      diff: '★ ☆ ☆'
+      diff: '★ ☆ ☆',
+      givenKeys: ['c', 'h'],
+      foundKeys: []
     };
-  } else if (variant === 'cathProj') {
+  }
+  if (variant === 'cathProj') {
     const setups = [{a:15, a1:9}, {a:20, a1:16}, {a:6, a1:4}, {a:12, a1:9}];
     const {a, a1} = pick(setups);
     const c = a*a/a1;
     const b1 = c - a1;
     const b2 = c*b1;
     const bN = nSqrt(num(b2));
-    const SN = makeNum(a, 2, 1); // a*b/2 in num form
     const SN_real = nMul(num(a), nMul(bN, makeNum(1, 2, 1)));
     return {
+      type: 'area',
       title: 'Лице чрез катет и проекция',
       text: `В правоъгълен триъгълник <span class="m">ABC</span> са дадени катет <span class="m">a</span> = ${a} и неговата проекция <span class="m">a<sub>1</sub></span> = ${a1}.`,
       given: `<b>Дадено:</b> ∠C = 90°, a = ${a}, a<sub>1</sub> = ${a1}`,
@@ -1571,35 +2143,39 @@ function makeArea() {
         `S = ${frac('a·b', 2)} = ${frac(`${a}·${renderNum(bN)}`, 2)} = ${renderNum(SN_real)}.`
       ],
       finalAnswer: `c = ${c}, &nbsp; b = ${renderNum(bN)}, &nbsp; S = ${renderNum(SN_real)}`,
-      diff: '★ ★ ☆'
-    };
-  } else {
-    const cases = [{c:13, h:6, S:39}, {c:25, h:12, S:150}, {c:10, h:4, S:20}, {c:5, h:2, S:5}];
-    const {c, h, S} = pick(cases);
-    return {
-      title: 'Лице чрез хипотенуза и височина',
-      text: `Хипотенузата на правоъгълен триъгълник е <span class="m">c</span> = ${c}, а височината към нея е <span class="m">h<sub>c</sub></span> = ${h}.`,
-      given: `<b>Дадено:</b> c = ${c}, h<sub>c</sub> = ${h}`,
-      find: 'Намерете лицето <span class="m">S</span>.',
-      answers: [
-        {label: 'S', expected: num(S)}
-      ],
-      steps: [
-        `S = ${frac('c·h<sub>c</sub>', 2)} = ${frac(`${c}·${h}`, 2)} = ${S}.`
-      ],
-      finalAnswer: `S = ${S}`,
-      diff: '★ ☆ ☆'
+      diff: '★ ★ ☆',
+      givenKeys: ['a', 'a1'],
+      foundKeys: ['c', 'b']
     };
   }
+  const cases = [{c:13, h:6, S:39}, {c:25, h:12, S:150}, {c:10, h:4, S:20}, {c:5, h:2, S:5}];
+  const {c, h, S} = pick(cases);
+  return {
+    type: 'area',
+    title: 'Лице чрез хипотенуза и височина',
+    text: `Хипотенузата на правоъгълен триъгълник е <span class="m">c</span> = ${c}, а височината към нея е <span class="m">h<sub>c</sub></span> = ${h}.`,
+    given: `<b>Дадено:</b> c = ${c}, h<sub>c</sub> = ${h}`,
+    find: 'Намерете лицето <span class="m">S</span>.',
+    answers: [
+      {label: 'S', expected: num(S)}
+    ],
+    steps: [
+      `S = ${frac('c·h<sub>c</sub>', 2)} = ${frac(`${c}·${h}`, 2)} = ${S}.`
+    ],
+    finalAnswer: `S = ${S}`,
+    diff: '★ ☆ ☆',
+    givenKeys: ['c', 'h'],
+    foundKeys: []
+  };
 }
 
-// ---------- Type: INSCRIBED CIRCLE ----------
 function makeIncircle() {
   const variant = pick(['ab', 'all']);
   if (variant === 'ab') {
     const [a, b, c] = pick(PYTH_TRIPLES);
     const r = (a + b - c) / 2;
     return {
+      type: 'incircle',
       title: 'Радиус на вписана окръжност',
       text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катетите <span class="m">a</span> = ${a} и <span class="m">b</span> = ${b}.`,
       given: `<b>Дадено:</b> ∠C = 90°, a = ${a}, b = ${b}`,
@@ -1613,37 +2189,39 @@ function makeIncircle() {
         `r = ${frac('a + b − c', 2)} = ${frac(`${a} + ${b} − ${c}`, 2)} = ${r}.`
       ],
       finalAnswer: `c = ${c}, &nbsp; r = ${r}`,
-      diff: '★ ★ ☆'
-    };
-  } else {
-    const [a, b, c] = pick(PYTH_TRIPLES);
-    const r = (a + b - c) / 2;
-    const R = c / 2;
-    const S = (a * b) / 2;
-    return {
-      title: 'Вписана и описана окр.',
-      text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катетите <span class="m">a</span> = ${a} и <span class="m">b</span> = ${b}.`,
-      given: `<b>Дадено:</b> ∠C = 90°, a = ${a}, b = ${b}`,
-      find: 'Намерете <span class="m">c</span>, <span class="m">S</span>, <span class="m">R</span> (описана) и <span class="m">r</span> (вписана).',
-      answers: [
-        {label: 'c', expected: num(c)},
-        {label: 'S', expected: num(S)},
-        {label: 'R', expected: makeNum(c, 2, 1)},
-        {label: 'r', expected: num(r)}
-      ],
-      steps: [
-        `c = ${sqr('a<sup>2</sup>+b<sup>2</sup>')} = ${c}.`,
-        `S = ${frac('a·b', 2)} = ${S}.`,
-        `R = ${frac('c', 2)} = ${c/2}.`,
-        `r = ${frac('a + b − c', 2)} = ${r}.`
-      ],
-      finalAnswer: `c = ${c}, &nbsp; S = ${S}, &nbsp; R = ${c/2}, &nbsp; r = ${r}`,
-      diff: '★ ★ ☆'
+      diff: '★ ★ ☆',
+      givenKeys: ['a', 'b'],
+      foundKeys: ['c']
     };
   }
+  const [a, b, c] = pick(PYTH_TRIPLES);
+  const r = (a + b - c) / 2;
+  const S = (a * b) / 2;
+  return {
+    type: 'incircle',
+    title: 'Вписана и описана окр.',
+    text: `В правоъгълен триъгълник <span class="m">ABC</span> (∠C = 90°) са дадени катетите <span class="m">a</span> = ${a} и <span class="m">b</span> = ${b}.`,
+    given: `<b>Дадено:</b> ∠C = 90°, a = ${a}, b = ${b}`,
+    find: 'Намерете <span class="m">c</span>, <span class="m">S</span>, <span class="m">R</span> (описана) и <span class="m">r</span> (вписана).',
+    answers: [
+      {label: 'c', expected: num(c)},
+      {label: 'S', expected: num(S)},
+      {label: 'R', expected: makeNum(c, 2, 1)},
+      {label: 'r', expected: num(r)}
+    ],
+    steps: [
+      `c = ${sqr('a<sup>2</sup>+b<sup>2</sup>')} = ${c}.`,
+      `S = ${frac('a·b', 2)} = ${S}.`,
+      `R = ${frac('c', 2)} = ${c/2}.`,
+      `r = ${frac('a + b − c', 2)} = ${r}.`
+    ],
+    finalAnswer: `c = ${c}, &nbsp; S = ${S}, &nbsp; R = ${c/2}, &nbsp; r = ${r}`,
+    diff: '★ ★ ☆',
+    givenKeys: ['a', 'b'],
+    foundKeys: ['c']
+  };
 }
 
-// ---------- Type: COORDINATE SYSTEM ----------
 function makeCoord() {
   const variant = pick(['dist', 'unknown']);
   if (variant === 'dist') {
@@ -1653,6 +2231,7 @@ function makeCoord() {
     const d2 = dx*dx + dy*dy;
     const dN = nSqrt(num(d2));
     return {
+      type: 'coord',
       title: 'Координатна система',
       text: `В координатна система <span class="m">Oxy</span> са дадени точките <span class="m">A</span>(${A[0]}; ${A[1]}) и <span class="m">B</span>(${B[0]}; ${B[1]}).`,
       given: `<b>Дадено:</b> A(${A[0]}; ${A[1]}), B(${B[0]}; ${B[1]})`,
@@ -1665,59 +2244,187 @@ function makeCoord() {
         `AB = ${sqr(`(${A[0]}−(${B[0]}))<sup>2</sup> + (${A[1]}−(${B[1]}))<sup>2</sup>`)} = ${sqr(`${dx*dx} + ${dy*dy}`)} = ${sqr(d2)} = ${renderNum(dN)}.`
       ],
       finalAnswer: `AB = ${renderNum(dN)}`,
-      diff: '★ ☆ ☆'
-    };
-  } else {
-    // AB known, A=(a; 2a), B=(-2; 0), find a (positive)
-    const cases = [
-      {AB: 10, B: [-2, 0]},  // (a+2)^2 + 4a^2 = 100 → 5a^2 + 4a - 96 = 0 → a=4
-      {AB: 5, B: [1, 0]},
-      {AB: 13, B: [-1, 0]}
-    ];
-    const c = cases[0]; // use a=4 case
-    return {
-      title: 'Координатна система',
-      text: `В координатна система <span class="m">Oxy</span> е дадено <span class="m">AB</span> = 10, <span class="m">A</span>(<em>a</em>; 2<em>a</em>) и <span class="m">B</span>(−2; 0). Точката <span class="m">A</span> е в първи квадрант.`,
-      given: `<b>Дадено:</b> AB = 10, &nbsp; A(a; 2a), &nbsp; B(−2; 0), &nbsp; a > 0`,
-      find: 'Намерете координатите на точка <span class="m">A</span>.',
-      answers: [
-        {label: 'a', expected: num(4)}
-      ],
-      steps: [
-        `AB<sup>2</sup> = (a − (−2))<sup>2</sup> + (2a − 0)<sup>2</sup> = (a+2)<sup>2</sup> + 4a<sup>2</sup> = 100.`,
-        `5a<sup>2</sup> + 4a − 96 = 0. Решенията са a = 4 и a = −${frac(24, 5)}.`,
-        `Тъй като A е в първи квадрант: a > 0 ⇒ a = 4. Тогава A(4; 8).`
-      ],
-      finalAnswer: `a = 4, &nbsp; A(4; 8)`,
-      diff: '★ ★ ★'
+      diff: '★ ☆ ☆',
+      givenKeys: [],
+      foundKeys: [],
+      isCoord: true,
+      coordPoints: { A, B }
     };
   }
+  return {
+    type: 'coord',
+    title: 'Координатна система',
+    text: `В координатна система <span class="m">Oxy</span> е дадено <span class="m">AB</span> = 10, <span class="m">A</span>(<em>a</em>; 2<em>a</em>) и <span class="m">B</span>(−2; 0). Точката <span class="m">A</span> е в първи квадрант.`,
+    given: `<b>Дадено:</b> AB = 10, &nbsp; A(a; 2a), &nbsp; B(−2; 0), &nbsp; a > 0`,
+    find: 'Намерете координатите на точка <span class="m">A</span>.',
+    answers: [
+      {label: 'a', expected: num(4)}
+    ],
+    steps: [
+      `AB<sup>2</sup> = (a − (−2))<sup>2</sup> + (2a − 0)<sup>2</sup> = (a+2)<sup>2</sup> + 4a<sup>2</sup> = 100.`,
+      `5a<sup>2</sup> + 4a − 96 = 0. Решенията са a = 4 и a = −${frac(24, 5)}.`,
+      `Тъй като A е в първи квадрант: a > 0 ⇒ a = 4. Тогава A(4; 8).`
+    ],
+    finalAnswer: `a = 4, &nbsp; A(4; 8)`,
+    diff: '★ ★ ★',
+    givenKeys: [],
+    foundKeys: [],
+    isCoord: true,
+    coordPoints: { A: [4, 8], B: [-2, 0] }
+  };
 }
 
 const BUILDERS = {
   pyth: makePyth, catheti: makeCatheti, proj: makeProj, cathProj: makeCathProj,
   hypProj: makeHypProj, altitude: makeAltitude, cathHyp: makeCathHyp,
   cathAlt: makeCathAlt, hypAlt: makeHypAlt,
-  area: makeArea,
-  incircle: makeIncircle, coord: makeCoord
+  area: makeArea, incircle: makeIncircle, coord: makeCoord
 };
 
 // ============================================================
-// UI
+// PART 4: UI STATE + ORCHESTRATION
 // ============================================================
 
-let activeInput = null;
+const $ = id => document.getElementById(id);
+
+// Persistent state
+const STATE = {
+  currentType: 'any',
+  counter: 0,
+  currentTask: null,
+  activeInput: null,
+  // Series
+  seriesLen: 5,
+  seriesIdx: 0,         // 0-based index of current task in series
+  seriesResults: [],    // array of true/false/null
+  seriesActive: false,
+  // UI
+  theme: 'light',
+  taskChecked: false,   // has user pressed Check on current task?
+  hint1Shown: false,
+  hint2Shown: false,
+  solutionShown: false
+};
+
+function saveState() {
+  try {
+    const s = {
+      theme: STATE.theme,
+      currentType: STATE.currentType,
+      seriesLen: STATE.seriesLen,
+      seriesIdx: STATE.seriesIdx,
+      seriesResults: STATE.seriesResults,
+      seriesActive: STATE.seriesActive,
+      counter: STATE.counter
+    };
+    localStorage.setItem('mzpt_state_v2', JSON.stringify(s));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem('mzpt_state_v2');
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    if (s.theme) STATE.theme = s.theme;
+    if (s.currentType) STATE.currentType = s.currentType;
+    if (typeof s.seriesLen === 'number') STATE.seriesLen = s.seriesLen;
+    if (typeof s.seriesIdx === 'number') STATE.seriesIdx = s.seriesIdx;
+    if (Array.isArray(s.seriesResults)) STATE.seriesResults = s.seriesResults;
+    if (typeof s.seriesActive === 'boolean') STATE.seriesActive = s.seriesActive;
+    if (typeof s.counter === 'number') STATE.counter = s.counter;
+  } catch(e) {}
+}
+
+// ============================================================
+// COORDINATE DIAGRAM RENDERER (dynamic axes)
+// ============================================================
+function renderCoordDiagram(coordPoints) {
+  if (!coordPoints) return;
+  const { A, B } = coordPoints;
+  // Scale: SVG is 540×380, x-axis from 40→500 (=460px), y-axis from 320→50 (=270px)
+  // Origin at (280, 220). Compute extents from points.
+  const xs = [A[0], B[0], 0];
+  const ys = [A[1], B[1], 0];
+  const xMin = Math.min(...xs) - 1, xMax = Math.max(...xs) + 1;
+  const yMin = Math.min(...ys) - 1, yMax = Math.max(...ys) + 1;
+  const xRange = Math.max(xMax - xMin, 8);
+  const yRange = Math.max(yMax - yMin, 8);
+  // We want origin to be visible — place it at (280,220) but check
+  // For simplicity: scale so range fits, center origin at (280,220)
+  const sx = 460 / xRange;
+  const sy = 270 / yRange;
+  const s = Math.min(sx, sy, 30); // cap at 30px per unit
+  // origin sx, sy
+  const ox = 280, oy = 220;
+  function px(x, y) { return [ox + x * s, oy - y * s]; }
+  
+  const [aX, aY] = px(A[0], A[1]);
+  const [bX, bY] = px(B[0], B[1]);
+  
+  $('pt-A').setAttribute('cx', aX);
+  $('pt-A').setAttribute('cy', aY);
+  $('pt-A-label').setAttribute('x', aX + 12);
+  $('pt-A-label').setAttribute('y', aY - 5);
+  $('pt-A-label').textContent = `A(${A[0]}; ${A[1]})`;
+  
+  $('pt-B').setAttribute('cx', bX);
+  $('pt-B').setAttribute('cy', bY);
+  $('pt-B-label').setAttribute('x', bX - 25);
+  $('pt-B-label').setAttribute('y', bY + 18);
+  $('pt-B-label').textContent = `B(${B[0]}; ${B[1]})`;
+  
+  $('pt-line').setAttribute('x1', aX);
+  $('pt-line').setAttribute('y1', aY);
+  $('pt-line').setAttribute('x2', bX);
+  $('pt-line').setAttribute('y2', bY);
+  
+  $('coord-label-AB').setAttribute('x', (aX + bX) / 2 + 6);
+  $('coord-label-AB').setAttribute('y', (aY + bY) / 2 - 6);
+}
+
+// ============================================================
+// TASK GENERATION + RENDERING
+// ============================================================
+function pickTypeForGeneration() {
+  if (STATE.currentType === 'any') return pick(ALL_TYPES);
+  return STATE.currentType;
+}
 
 function generateTask() {
-  const type = currentType === 'any' ? pick(TYPES) : currentType;
+  const type = pickTypeForGeneration();
   let task;
   try { task = BUILDERS[type](); }
   catch(e) { console.error(e); task = makePyth(); }
 
-  currentTask = task;
-  counter++;
+  STATE.currentTask = task;
+  STATE.counter++;
+  STATE.taskChecked = false;
+  STATE.hint1Shown = false;
+  STATE.hint2Shown = false;
+  STATE.solutionShown = false;
 
-  $('taskNum').textContent = `Задача №${counter}`;
+  const meta = TYPE_META[task.type] || {};
+
+  // Diagram switching
+  if (task.isCoord) {
+    setDiagramMode(true);
+    renderCoordDiagram(task.coordPoints);
+    clearSvgHighlights();
+  } else {
+    setDiagramMode(false);
+    highlightSvg(task.givenKeys || [], task.foundKeys || []);
+  }
+
+  // Formula highlighting disabled — formulas are reference, not hints
+  clearFormulaHighlights();
+
+  // Task text
+  if (STATE.seriesActive) {
+    $('taskNum').textContent = `Серия · задача ${STATE.seriesIdx + 1} от ${STATE.seriesLen}`;
+  } else {
+    $('taskNum').textContent = `Задача №${STATE.counter}`;
+  }
   $('diff').innerHTML = task.diff;
   $('taskTitle').textContent = task.title;
   $('taskText').innerHTML = task.text;
@@ -1729,42 +2436,60 @@ function generateTask() {
     `<div class="answer-row">
        <label>${a.label}</label>
        <span class="eq">=</span>
-       <input class="ans-input" id="ans${i}" type="text" autocomplete="off" data-idx="${i}">
+       <input class="ans-input" id="ans${i}" type="text" autocomplete="off" data-idx="${i}" inputmode="text">
        <span class="ans-status" id="st${i}"></span>
      </div>`
   ).join('');
   $('answerInputs').innerHTML = inputsHtml;
 
-  // Wire focus
   document.querySelectorAll('.ans-input').forEach(el => {
-    el.addEventListener('focus', () => activeInput = el);
+    el.addEventListener('focus', () => STATE.activeInput = el);
     el.addEventListener('input', () => {
       el.classList.remove('correct', 'wrong');
       const st = $('st' + el.dataset.idx);
       if (st) st.textContent = '';
     });
   });
-  // Auto-focus first
   if (task.answers.length > 0) {
     setTimeout(() => {
       const first = document.querySelector('.ans-input');
-      if (first) { first.focus(); activeInput = first; }
+      if (first) { first.focus(); STATE.activeInput = first; }
     }, 50);
   }
 
+  // Hints + solution content
+  $('hint1Text').innerHTML = meta.hint1 || 'Вглеждайте се внимателно в данните и помислете коя формула ги свързва.';
+  $('hint2Text').innerHTML = meta.hint2 || 'Използвайте показаните метрични зависимости.';
+
   $('solSteps').innerHTML = task.steps.map(s => `<div class="solution-step">${s}</div>`).join('');
   $('ansBox').innerHTML = `<b>Отговор:</b> &nbsp; ${task.finalAnswer}`;
+
+  // Reset hint/solution visibility
+  $('hint1Card').classList.remove('show');
+  $('hint2Card').classList.remove('show');
   $('solBox').classList.remove('show');
-  $('solBtn').textContent = 'Покажи решение';
+  $('solBtn').textContent = '📖 Пълно решение';
+  $('hint1Btn').textContent = '💡 Подсказка';
+  $('hint2Btn').textContent = '📐 Формула';
+
+  // Hide series summary if showing
+  $('seriesSummary').classList.remove('show');
 
   $('seedTxt').textContent = `// type: ${type} · seed: ${Date.now().toString(36)}`;
+  saveState();
 }
 
+// ============================================================
+// CHECK ANSWERS
+// ============================================================
 function checkAnswers() {
-  if (!currentTask) return;
+  if (!STATE.currentTask) return;
   let allCorrect = true;
   let anyAnswered = false;
-  currentTask.answers.forEach((a, i) => {
+  let correctCount = 0;
+  let totalCount = STATE.currentTask.answers.length;
+
+  STATE.currentTask.answers.forEach((a, i) => {
     const el = $('ans' + i);
     const st = $('st' + i);
     if (!el) return;
@@ -1783,6 +2508,7 @@ function checkAnswers() {
       st.textContent = '✓';
       st.classList.remove('no');
       st.classList.add('ok');
+      correctCount++;
     } else {
       el.classList.remove('correct');
       el.classList.add('wrong');
@@ -1792,78 +2518,603 @@ function checkAnswers() {
       allCorrect = false;
     }
   });
+
+  if (!anyAnswered) return;
+
+  // Update SVG: mark fields the user got right with green pulse
+  // (We do this by re-running highlightSvg with all foundKeys = green if all answers correct)
+  if (allCorrect && STATE.currentTask.foundKeys) {
+    highlightSvg(STATE.currentTask.givenKeys || [], STATE.currentTask.foundKeys);
+  }
+
+  // Series tracking
+  if (STATE.seriesActive && !STATE.taskChecked) {
+    const allAnswered = STATE.currentTask.answers.every((a,i) => $('ans'+i).value.trim() !== '');
+    if (allAnswered) {
+      STATE.seriesResults[STATE.seriesIdx] = allCorrect;
+      STATE.taskChecked = true;
+      renderProgressDots();
+      saveState();
+    }
+  }
 }
 
-// Virtual keyboard
-$('vkbd').addEventListener('click', (e) => {
-  const btn = e.target.closest('.vkey');
-  if (!btn) return;
-  const k = btn.dataset.k;
-  if (!activeInput) {
-    const first = document.querySelector('.ans-input');
-    if (first) { first.focus(); activeInput = first; }
-    else return;
+// ============================================================
+// SERIES MANAGEMENT
+// ============================================================
+function renderProgressDots() {
+  const container = $('progressDots');
+  container.innerHTML = '';
+  for (let i = 0; i < STATE.seriesLen; i++) {
+    const d = document.createElement('div');
+    d.className = 'pdot';
+    if (STATE.seriesResults[i] === true) { d.classList.add('ok'); d.textContent = '✓'; }
+    else if (STATE.seriesResults[i] === false) { d.classList.add('no'); d.textContent = '✗'; }
+    else if (i === STATE.seriesIdx) { d.classList.add('cur'); d.textContent = String(i + 1); }
+    else { d.textContent = String(i + 1); }
+    container.appendChild(d);
   }
-  const el = activeInput;
-  const start = el.selectionStart || el.value.length;
-  const end = el.selectionEnd || el.value.length;
-  let insert = '';
+  $('seriesCur').textContent = String(Math.min(STATE.seriesIdx + 1, STATE.seriesLen));
+  $('seriesTotal').textContent = String(STATE.seriesLen);
+}
 
-  if (k === 'back') {
-    if (start === end && start > 0) {
-      el.value = el.value.slice(0, start - 1) + el.value.slice(end);
-      el.selectionStart = el.selectionEnd = start - 1;
-    } else {
-      el.value = el.value.slice(0, start) + el.value.slice(end);
-      el.selectionStart = el.selectionEnd = start;
-    }
-    el.dispatchEvent(new Event('input'));
-    el.focus();
-    return;
-  }
-  if (k === 'clear') {
-    el.value = '';
-    el.dispatchEvent(new Event('input'));
-    el.focus();
-    return;
-  }
-  if (k === 'space') insert = ' ';
-  else insert = k;
+function startSeries(len) {
+  STATE.seriesLen = len;
+  STATE.seriesIdx = 0;
+  STATE.seriesResults = new Array(len).fill(null);
+  STATE.seriesActive = true;
+  renderProgressDots();
+  $('seriesSummary').classList.remove('show');
+  generateTask();
+  saveState();
+}
 
-  el.value = el.value.slice(0, start) + insert + el.value.slice(end);
-  const newPos = start + insert.length;
-  el.selectionStart = el.selectionEnd = newPos;
-  el.dispatchEvent(new Event('input'));
-  el.focus();
-});
-
-// Buttons
-$('newBtn').addEventListener('click', generateTask);
-$('checkBtn').addEventListener('click', checkAnswers);
-$('solBtn').addEventListener('click', () => {
-  const sol = $('solBox');
-  sol.classList.toggle('show');
-  $('solBtn').textContent = sol.classList.contains('show') ? 'Скрий решение' : 'Покажи решение';
-});
-
-// Type chips
-document.querySelectorAll('#typeControls .chip').forEach(chip => {
-  chip.addEventListener('click', () => {
-    document.querySelectorAll('#typeControls .chip').forEach(c => c.classList.remove('active'));
-    chip.classList.add('active');
-    currentType = chip.dataset.type;
+function advanceSeries() {
+  if (!STATE.seriesActive) {
     generateTask();
-  });
-});
-
-// Enter key checks
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && document.activeElement && document.activeElement.classList.contains('ans-input')) {
-    checkAnswers();
+    return;
   }
-});
+  STATE.seriesIdx++;
+  if (STATE.seriesIdx >= STATE.seriesLen) {
+    showSeriesSummary();
+    STATE.seriesActive = false;
+    saveState();
+    return;
+  }
+  renderProgressDots();
+  generateTask();
+}
 
-generateTask();
+function showSeriesSummary() {
+  const correct = STATE.seriesResults.filter(r => r === true).length;
+  const total = STATE.seriesLen;
+  const pct = Math.round(100 * correct / total);
+  $('seriesPct').textContent = pct + '%';
+  $('seriesStat').textContent = `${correct} от ${total} верни отговора`;
+  $('seriesSummary').classList.add('show');
+}
+
+// ============================================================
+// VIRTUAL KEYBOARD
+// ============================================================
+function setupVKbd() {
+  $('vkbd').addEventListener('click', (e) => {
+    const btn = e.target.closest('.vkey');
+    if (!btn) return;
+    const k = btn.dataset.k;
+    if (!STATE.activeInput) {
+      const first = document.querySelector('.ans-input');
+      if (first) { first.focus(); STATE.activeInput = first; }
+      else return;
+    }
+    const el = STATE.activeInput;
+    const start = el.selectionStart || el.value.length;
+    const end = el.selectionEnd || el.value.length;
+    let insert = '';
+
+    if (k === 'back') {
+      if (start === end && start > 0) {
+        el.value = el.value.slice(0, start - 1) + el.value.slice(end);
+        el.selectionStart = el.selectionEnd = start - 1;
+      } else {
+        el.value = el.value.slice(0, start) + el.value.slice(end);
+        el.selectionStart = el.selectionEnd = start;
+      }
+      el.dispatchEvent(new Event('input'));
+      el.focus();
+      return;
+    }
+    if (k === 'clear') {
+      el.value = '';
+      el.dispatchEvent(new Event('input'));
+      el.focus();
+      return;
+    }
+    if (k === 'space') insert = ' ';
+    else insert = k;
+
+    el.value = el.value.slice(0, start) + insert + el.value.slice(end);
+    const newPos = start + insert.length;
+    el.selectionStart = el.selectionEnd = newPos;
+    el.dispatchEvent(new Event('input'));
+    el.focus();
+  });
+
+  $('kbdToggle').addEventListener('click', () => {
+    const vk = $('vkbd');
+    vk.classList.toggle('show');
+    $('kbdToggle').classList.toggle('active');
+  });
+}
+
+// ============================================================
+// HINTS + SOLUTION
+// ============================================================
+function setupHints() {
+  $('hint1Btn').addEventListener('click', () => {
+    const card = $('hint1Card');
+    card.classList.toggle('show');
+    STATE.hint1Shown = card.classList.contains('show');
+    $('hint1Btn').textContent = STATE.hint1Shown ? '💡 Скрий подсказка' : '💡 Подсказка';
+  });
+  $('hint2Btn').addEventListener('click', () => {
+    const card = $('hint2Card');
+    card.classList.toggle('show');
+    STATE.hint2Shown = card.classList.contains('show');
+    $('hint2Btn').textContent = STATE.hint2Shown ? '📐 Скрий формула' : '📐 Формула';
+  });
+  $('solBtn').addEventListener('click', () => {
+    const sol = $('solBox');
+    sol.classList.toggle('show');
+    STATE.solutionShown = sol.classList.contains('show');
+    $('solBtn').textContent = STATE.solutionShown ? '📖 Скрий решение' : '📖 Пълно решение';
+  });
+}
+
+// ============================================================
+// THEME TOGGLE
+// ============================================================
+function applyTheme() {
+  document.body.setAttribute('data-theme', STATE.theme);
+  $('themeToggle').textContent = STATE.theme === 'dark' ? '☀' : '☾';
+  $('themeToggle').setAttribute('title', STATE.theme === 'dark' ? 'Премини към светла тема' : 'Премини към тъмна тема');
+}
+
+function setupTheme() {
+  applyTheme();
+  $('themeToggle').addEventListener('click', () => {
+    STATE.theme = STATE.theme === 'light' ? 'dark' : 'light';
+    applyTheme();
+    saveState();
+  });
+}
+
+// ============================================================
+// MODE SWITCH
+// ============================================================
+function setupModeSwitch() {
+  $('modeStudent').addEventListener('click', () => {
+    document.body.classList.remove('teacher-mode');
+    $('modeStudent').classList.add('active');
+    $('modeStudent').setAttribute('aria-selected', 'true');
+    $('modeTeacher').classList.remove('active');
+    $('modeTeacher').setAttribute('aria-selected', 'false');
+  });
+  $('modeTeacher').addEventListener('click', () => {
+    document.body.classList.add('teacher-mode');
+    $('modeTeacher').classList.add('active');
+    $('modeTeacher').setAttribute('aria-selected', 'true');
+    $('modeStudent').classList.remove('active');
+    $('modeStudent').setAttribute('aria-selected', 'false');
+  });
+}
+
+// ============================================================
+// TYPE CHIPS
+// ============================================================
+function setupTypeChips() {
+  document.querySelectorAll('.type-groups .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.type-groups .chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      STATE.currentType = chip.dataset.type;
+      // Reset series when changing type — but only if user wants
+      if (STATE.seriesActive) {
+        // Restart series with new type
+        startSeries(STATE.seriesLen);
+      } else {
+        generateTask();
+      }
+      saveState();
+    });
+  });
+
+  // Restore active chip from state
+  const activeChip = document.querySelector(`.type-groups .chip[data-type="${STATE.currentType}"]`);
+  if (activeChip) {
+    document.querySelectorAll('.type-groups .chip').forEach(c => c.classList.remove('active'));
+    activeChip.classList.add('active');
+  }
+}
+
+// ============================================================
+// SERIES UI
+// ============================================================
+function setupSeriesUI() {
+  $('seriesLen').value = STATE.seriesLen;
+  $('seriesLen').addEventListener('change', () => {
+    let v = parseInt($('seriesLen').value, 10);
+    if (isNaN(v) || v < 1) v = 1;
+    if (v > 20) v = 20;
+    $('seriesLen').value = v;
+    startSeries(v);
+  });
+  $('resetSeriesBtn').addEventListener('click', () => {
+    const v = parseInt($('seriesLen').value, 10) || 5;
+    startSeries(v);
+  });
+}
+
+// ============================================================
+// MAIN BUTTONS
+// ============================================================
+function setupMainButtons() {
+  $('checkBtn').addEventListener('click', checkAnswers);
+  $('newBtn').addEventListener('click', () => {
+    advanceSeries();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && document.activeElement && document.activeElement.classList.contains('ans-input')) {
+      e.preventDefault();
+      checkAnswers();
+    }
+  });
+}
+
+// ============================================================
+// PART 5: TEACHER MODE
+// ============================================================
+function generateTeacherTest() {
+  const count = Math.max(3, Math.min(30, parseInt($('testCount').value, 10) || 10));
+  const level = $('testLevel').value;
+  const includeAnswers = $('includeAnswers').checked;
+  const includeFullSolutions = $('includeFullSolutions').checked;
+  const includeNameLine = $('includeNameLine').checked;
+  const includeFigure = $('includeFigure').checked;
+  const title = $('testTitle').value || 'Контролна работа';
+
+  // Filter types by level
+  let allowed = [];
+  if (level === 'all') allowed = ALL_TYPES;
+  else if (level === 'basic') allowed = ALL_TYPES.filter(t => TYPE_META[t].group === 'basic');
+  else if (level === 'medium') allowed = ALL_TYPES.filter(t => ['basic','medium'].includes(TYPE_META[t].group));
+  else if (level === 'advanced') allowed = ALL_TYPES.filter(t => ['medium','advanced'].includes(TYPE_META[t].group));
+  else if (level === 'hard') allowed = ALL_TYPES.filter(t => TYPE_META[t].group === 'advanced');
+
+  if (allowed.length === 0) allowed = ALL_TYPES;
+
+  const tasks = [];
+  for (let i = 0; i < count; i++) {
+    const type = allowed[Math.floor(Math.random() * allowed.length)];
+    let t;
+    try { t = BUILDERS[type](); } catch(e) { t = makePyth(); }
+    tasks.push(t);
+  }
+
+  // Build HTML preview
+  let html = '';
+  const today = new Date().toLocaleDateString('bg-BG');
+  html += `<div style="text-align:center; margin-bottom:14px;">`;
+  html += `<div style="font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:700;">${escapeHtml(title)}</div>`;
+  html += `<div style="font-size:11px; color:#555; margin-top:4px;">Дата: ${today} &nbsp;·&nbsp; ${count} задачи</div>`;
+  if (includeNameLine) {
+    html += `<div style="margin-top:10px; font-size:12px; display:flex; gap:20px; justify-content:center;">`;
+    html += `<span>Име: <span style="display:inline-block; border-bottom:1px solid #000; min-width:160px;">&nbsp;</span></span>`;
+    html += `<span>Клас: <span style="display:inline-block; border-bottom:1px solid #000; min-width:60px;">&nbsp;</span></span>`;
+    html += `<span>№: <span style="display:inline-block; border-bottom:1px solid #000; min-width:40px;">&nbsp;</span></span>`;
+    html += `</div>`;
+  }
+  html += `</div>`;
+
+  tasks.forEach((task, idx) => {
+    html += `<div class="ptask">`;
+    html += `<div style="display:flex; gap:8px; align-items:flex-start;">`;
+    html += `<div style="flex:1;">`;
+    html += `<div style="font-weight:600; font-size:12px;">${idx+1}. ${task.text}</div>`;
+    html += `<div style="margin-top:3px; color:#7a1a26; font-style:italic; font-size:11px;">${task.find}</div>`;
+    html += `</div>`;
+    if (includeFigure && !task.isCoord) {
+      html += `<div style="flex-shrink:0;">${miniTriangleSvg(task.givenKeys || [])}</div>`;
+    }
+    html += `</div>`;
+    html += `</div>`;
+  });
+
+  // Answers section
+  if (includeAnswers) {
+    html += `<div style="page-break-before:always; margin-top:30px;"><h4>Отговори</h4>`;
+    tasks.forEach((task, idx) => {
+      html += `<div class="ptask"><b>${idx+1}.</b> ${task.finalAnswer}</div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Full solutions section
+  if (includeFullSolutions) {
+    html += `<div style="page-break-before:always; margin-top:30px;"><h4>Пълни решения</h4>`;
+    tasks.forEach((task, idx) => {
+      html += `<div class="ptask">`;
+      html += `<div style="font-weight:600; margin-bottom:3px;">${idx+1}. ${task.title}</div>`;
+      task.steps.forEach(s => {
+        html += `<div style="padding-left:12px; font-size:11px;">▸ ${s}</div>`;
+      });
+      html += `<div style="margin-top:4px; padding:4px 6px; background:#000; color:#fff; font-size:11px;"><b>Отговор:</b> ${task.finalAnswer}</div>`;
+      html += `</div>`;
+    });
+    html += `</div>`;
+  }
+
+  $('teacherPreview').innerHTML = html;
+  return { html, title };
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function miniTriangleSvg(givenKeys) {
+  // Compact 80x60 triangle for teacher print
+  // Vertices: A(6,50)  B(74,50)  C(55,6)  →  foot of altitude H(55,50)
+  const isGiven = (k) => givenKeys.includes(k);
+  const aStroke = isGiven('a') ? '#000' : '#888';
+  const bStroke = isGiven('b') ? '#000' : '#888';
+  const cStroke = isGiven('c') ? '#000' : '#888';
+  const aWidth = isGiven('a') ? 2 : 1;
+  const bWidth = isGiven('b') ? 2 : 1;
+  const cWidth = isGiven('c') ? 2 : 1;
+  const hStroke = isGiven('h') ? '#000' : '#888';
+  const hWidth = isGiven('h') ? 1.5 : 0.9;
+  // Right-angle marker at C: small square along the two legs CA and CB
+  // Direction from C to A: (-49, 44), normalized → (-0.744, 0.668)
+  // Direction from C to B: (19, 44), normalized → (0.396, 0.918)
+  // Use square of side ~6 px along each leg
+  const cx = 55, cy = 6;
+  const dCAx = -0.744 * 6, dCAy = 0.668 * 6;
+  const dCBx = 0.396 * 6, dCBy = 0.918 * 6;
+  const p1x = (cx + dCAx).toFixed(1), p1y = (cy + dCAy).toFixed(1);
+  const p2x = (cx + dCAx + dCBx).toFixed(1), p2y = (cy + dCAy + dCBy).toFixed(1);
+  const p3x = (cx + dCBx).toFixed(1), p3y = (cy + dCBy).toFixed(1);
+  return `<svg width="80" height="60" viewBox="0 0 80 60" xmlns="http://www.w3.org/2000/svg">
+    <line x1="6" y1="50" x2="74" y2="50" stroke="${cStroke}" stroke-width="${cWidth}"/>
+    <line x1="6" y1="50" x2="55" y2="6" stroke="${bStroke}" stroke-width="${bWidth}"/>
+    <line x1="74" y1="50" x2="55" y2="6" stroke="${aStroke}" stroke-width="${aWidth}"/>
+    <line x1="55" y1="6" x2="55" y2="50" stroke="${hStroke}" stroke-width="${hWidth}" stroke-dasharray="3,2"/>
+    <path d="M ${p1x},${p1y} L ${p2x},${p2y} L ${p3x},${p3y}" fill="none" stroke="#000" stroke-width="0.7"/>
+    <text x="0" y="58" font-family="serif" font-style="italic" font-size="10" font-weight="700">A</text>
+    <text x="74" y="58" font-family="serif" font-style="italic" font-size="10" font-weight="700">B</text>
+    <text x="50" y="6" font-family="serif" font-style="italic" font-size="10" font-weight="700">C</text>
+    <text x="33" y="58" font-family="serif" font-style="italic" font-size="9">c</text>
+    <text x="22" y="30" font-family="serif" font-style="italic" font-size="9">b</text>
+    <text x="68" y="30" font-family="serif" font-style="italic" font-size="9">a</text>
+  </svg>`;
+}
+
+function diagnosePrint() {
+  const log = [];
+  const add = (label, val) => log.push(label + ': ' + val);
+
+  add('Browser', navigator.userAgent.substring(0, 80));
+  add('URL protocol', window.location.protocol);
+  add('Page is in iframe', window.self !== window.top ? 'YES' : 'no');
+
+  const previewEl = document.getElementById('teacherPreview');
+  add('teacherPreview element exists', previewEl ? 'yes' : 'NO');
+  if (previewEl) {
+    const tasks = previewEl.querySelectorAll('.ptask');
+    add('Tasks in preview', tasks.length);
+    add('Preview HTML length', previewEl.innerHTML.length + ' chars');
+  }
+
+  add('window.print is function', typeof window.print === 'function' ? 'yes' : 'NO');
+
+  // Try the simplest possible print call
+  log.push('');
+  log.push('--- Тествам window.print() директно... ---');
+
+  try {
+    window.print();
+    log.push('window.print() извика се без грешка.');
+    log.push('Ако диалогът не се отвори, проблемът е в браузъра/системата, не в страницата.');
+  } catch (e) {
+    log.push('window.print() ХВЪРЛИ ГРЕШКА: ' + e.message);
+  }
+
+  alert(log.join('\n'));
+}
+
+function printTest() {
+  try {
+    // Generate first if preview is empty
+    if (!$('teacherPreview').querySelector('.ptask')) {
+      generateTeacherTest();
+    }
+    const previewEl = $('teacherPreview');
+    if (!previewEl || !previewEl.querySelector('.ptask')) {
+      alert('Първо натиснете „Генерирай преглед".');
+      return;
+    }
+    const previewHtml = previewEl.innerHTML;
+    const title = ($('testTitle') && $('testTitle').value) || 'Тест';
+
+    // Remove any old print iframe
+    const old = document.getElementById('print-frame');
+    if (old) old.remove();
+
+    // Create the iframe FIRST and append to DOM
+    const iframe = document.createElement('iframe');
+    iframe.id = 'print-frame';
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+    document.body.appendChild(iframe);
+
+    // Build the document content as a Blob URL — most reliable cross-browser approach
+    const docHtml = `<!DOCTYPE html><html lang="bg"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title>
+<style>
+  @page { margin: 14mm; size: A4; }
+  * { box-sizing: border-box; }
+  body { font-family: Georgia, 'Times New Roman', serif; padding: 0; margin: 0; color: #000; background: #fff; line-height: 1.5; font-size: 12pt; }
+  h4 { font-family: Georgia, serif; font-size: 16pt; margin: 0 0 14px; border-bottom: 1px solid #000; padding-bottom: 5px; text-align: center; font-weight: 700; }
+  .ptask { margin-bottom: 14px; padding-bottom: 8px; font-size: 11pt; page-break-inside: avoid; }
+  .ptask:not(:last-child) { border-bottom: 1px dashed #999; }
+  .frac { display: inline-block; vertical-align: middle; text-align: center; font-size: 0.9em; line-height: 1.2; margin: 0 0.15em; }
+  .frac > span { display: block; padding: 0 0.2em; }
+  .frac > span:first-child { border-bottom: 1.5px solid #000; }
+  .sqrt { display: inline-block; white-space: nowrap; vertical-align: middle; }
+  .sqrt-sign { display: inline-block; margin-right: -0.15em; font-family: serif; }
+  .sqrt-val { display: inline-block; border-top: 1.5px solid #000; padding-top: 0.05em; padding-left: 0.05em; padding-right: 0.1em; }
+  .m { font-family: Georgia, serif; font-style: italic; font-weight: 700; }
+  em { font-style: italic; }
+  sub, sup { font-size: 0.7em; }
+  svg { display: inline-block; vertical-align: middle; }
+</style>
+<` + `script>
+  window.addEventListener('load', function() {
+    setTimeout(function() {
+      try { window.print(); } catch(e) {}
+    }, 200);
+  });
+</` + `script>
+</head><body>${previewHtml}</body></html>`;
+
+    // Use srcdoc — works in Edge, Chrome, Firefox, and modern browsers
+    iframe.srcdoc = docHtml;
+
+    // Cleanup after print
+    setTimeout(() => {
+      if (iframe && iframe.parentNode) iframe.remove();
+    }, 5000);
+
+  } catch (err) {
+    alert('Грешка при печат: ' + err.message + '\n\nПробвайте Ctrl+P (или Cmd+P на Mac).');
+  }
+}
+
+function setupTeacherMode() {
+  const genBtn = $('generateTestBtn');
+  const printBtn = $('printTestBtn');
+  if (!genBtn || !printBtn) {
+    alert('Грешка: бутоните за учителски режим не са намерени в страницата.');
+    return;
+  }
+  genBtn.addEventListener('click', generateTeacherTest);
+  printBtn.addEventListener('click', printTest);
+  // Belt-and-suspenders: also wire as direct property in case addEventListener silently fails
+  printBtn.onclick = printTest;
+}
+
+// ============================================================
+// TEACHER UNLOCK (Ctrl+Alt+T  OR  5 taps on the title)
+// ============================================================
+function setupTeacherUnlock() {
+  // Restore from localStorage if previously unlocked
+  try {
+    if (localStorage.getItem('mzpt_teacher_unlocked') === '1') {
+      document.body.classList.add('teacher-unlocked');
+    }
+  } catch (e) { /* ignore */ }
+
+  // Method A: 5 taps on the page title within 3 seconds
+  const title = document.querySelector('header h1');
+  if (title) {
+    title.style.cursor = 'default';
+    title.style.userSelect = 'none';
+    let tapCount = 0;
+    let tapTimer = null;
+    title.addEventListener('click', () => {
+      tapCount++;
+      if (tapTimer) clearTimeout(tapTimer);
+      tapTimer = setTimeout(() => { tapCount = 0; }, 3000);
+      if (tapCount >= 5) {
+        tapCount = 0;
+        toggleTeacherUnlock();
+      }
+    });
+  }
+
+  // Method B: Ctrl+Alt+T (avoids browser shortcuts like Ctrl+Shift+T = reopen tab)
+  document.addEventListener('keydown', (e) => {
+    const isUnlock = (e.ctrlKey || e.metaKey) && e.altKey && (e.key === 'T' || e.key === 't' || e.code === 'KeyT');
+    if (!isUnlock) return;
+    e.preventDefault();
+    e.stopPropagation();
+    toggleTeacherUnlock();
+  });
+}
+
+function toggleTeacherUnlock() {
+  const wasUnlocked = document.body.classList.contains('teacher-unlocked');
+  if (wasUnlocked) {
+    // Lock back: switch to student mode and hide the toggle
+    document.body.classList.remove('teacher-unlocked');
+    document.body.classList.remove('teacher-mode');
+    $('modeStudent').classList.add('active');
+    $('modeStudent').setAttribute('aria-selected', 'true');
+    $('modeTeacher').classList.remove('active');
+    $('modeTeacher').setAttribute('aria-selected', 'false');
+    try { localStorage.removeItem('mzpt_teacher_unlocked'); } catch (e) {}
+    flashMessage('🔒 Учителски режим заключен');
+  } else {
+    document.body.classList.add('teacher-unlocked');
+    try { localStorage.setItem('mzpt_teacher_unlocked', '1'); } catch (e) {}
+    flashMessage('🔓 Учителски режим отключен · виж горе вляво');
+  }
+}
+
+function flashMessage(text) {
+  let el = document.getElementById('flashMessage');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'flashMessage';
+    el.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#14110f;color:#fff;padding:12px 20px;font-family:\'JetBrains Mono\',monospace;font-size:13px;letter-spacing:0.05em;border:1.5px solid #14110f;box-shadow:4px 4px 0 #b38030;z-index:9999;transition:opacity 0.25s;';
+    document.body.appendChild(el);
+  }
+  el.textContent = text;
+  el.style.opacity = '1';
+  clearTimeout(el._timeout);
+  el._timeout = setTimeout(() => {
+    el.style.opacity = '0';
+  }, 2200);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  loadState();
+  setupTheme();
+  setupTeacherUnlock();
+  setupModeSwitch();
+  setupTypeChips();
+  setupSeriesUI();
+  setupVKbd();
+  setupHints();
+  setupMainButtons();
+  setupTeacherMode();
+
+  // Start a fresh series on first load
+  if (!STATE.seriesActive || STATE.seriesIdx >= STATE.seriesLen) {
+    startSeries(STATE.seriesLen);
+  } else {
+    renderProgressDots();
+    generateTask();
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 </script>
 </body>
 </html>
